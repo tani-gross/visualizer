@@ -1,0 +1,264 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+/* base styles */
+* {
+  margin: 0;
+  font-family: "Quicksand";
+  color: #333;
+  box-sizing: border-box;
+}
+
+.navbar {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  max-width: 650px;
+  margin: 0 auto;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.navbar h1 {
+  color: #f1356d;
+}
+
+.navbar .links {
+  margin-left: auto;
+}
+
+.navbar a {
+  margin-left: 16px;
+  text-decoration: none;
+  padding: 6px;
+}
+
+.navbar a:hover {
+  color: #f1356d;
+}
+
+.content {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.sorting-main-container {
+  display: flex;
+  flex-direction: row ;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: visible;
+  position:relative;
+
+}
+
+.sorting-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  flex-grow: 1;
+}
+
+.sorting-button-container {
+  display:flex;
+  flex-direction: column;
+  justify-content: center; /* Align buttons to the left */
+  width: 100%;
+  box-sizing: border-box;
+  margin-left: 20px; /* Ensure buttons are aligned to the left */
+  flex-shrink: 0;
+
+}
+
+.sorting-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 5px;
+  width: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.sorting-button-small {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 5px;
+  width: 175px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.sorting-button:hover {
+  background-color: rgb(180, 171, 171); /* Hover background color */
+  border: rgb(180, 171, 171);
+}
+
+.bars-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  bottom: 100px;
+  width: 100%; 
+  padding: 10px; /* Add padding to ensure bars don't touch the edges */
+  margin: 0 auto;
+  flex-grow: 1;
+}
+
+.bar {
+  background-color: green;
+  transition: transform 0.5s ease-in-out;
+  margin:0;
+  border: 1px solid white; /* Add a thin border to each bar */
+}
+
+.bar.active {
+  background-color: red; /* Change this color as needed */
+}
+
+.bar.sorted {
+  background-color: turquoise; /* Change this color as needed */
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
+.graphs-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 1200px; /* Ensure this is set to your desired maximum width */
+  margin: 0 auto;
+  overflow: visible; /* Allow overflow */
+}
+
+.graph-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+.graph-box {
+  width: 500px;
+  height: 500px;
+  border: 2px solid #000;
+  position: relative;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.graph-node {
+  width: 20px;
+  height: 20px;
+  background-color: black;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  position: absolute;
+  cursor: move;
+  user-select: none;
+}
+
+.graph-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 5px;
+  width: 165px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.graph-button:hover {
+  background-color: rgb(180, 171, 171); /* Hover background color */
+  border: rgb(180, 171, 171);
+}
+
+.edge {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  margin-left: 20px;
+  flex-shrink: 0; /* Prevent shrinking */
+  height: 100%;
+}
+
+.status-text {
+  text-align: center;
+  padding-top: 20px; /* Adjust to be right below the graph container */
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: space-between; /* Ensures the text and slider are on the same line */
+  white-space: nowrap; /* Prevents text wrapping */
+}
+
+.slider-label {
+  margin-right: auto; /* Align to the left */
+}
+
+.slider-content {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center the slider content */
+}
+
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  background: #ddd;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  background: #4CAF50;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  background: #4CAF50;
+  cursor: pointer;
+}
