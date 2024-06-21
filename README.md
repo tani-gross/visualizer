@@ -14,4 +14,4 @@ In the project directory run:
 
 ### `npm start` to open the website on your machine
 
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser
