@@ -6,7 +6,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ### `git clone` this repository
 
-### `cd /visualizer/<Visusalizer Project/` to navigate to project directory
+### `cd /visualizer/Visusalizer Project/` to navigate to project directory
 
 In the project directory run:
 
