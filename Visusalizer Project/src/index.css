@@ -8,6 +8,11 @@
   box-sizing: border-box;
 }
 
+.content {
+  margin: 40px auto;
+  height: 610px;
+}
+
 /* Navigation Bar Styles */
 .navbar{
   padding: 20px;
@@ -63,18 +68,12 @@
 
 /* Sorting Page Styles */
 
-.content {
-  margin: 40px auto;
-  height: 610px;
-}
-
 .sorting-main-container {
   display: flex;
-  flex-direction: row;
   align-items: center;
   justify-content: center;
+  position: relative;
   width: 100%;
-  margin-left: 700px;
   padding-top: 24px;
 }
 
@@ -82,19 +81,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%;
-  flex-grow: 1;
+  flex-shrink: 0;
 }
 
 .sorting-button-container {
   display:flex;
   flex-direction: column;
-  justify-content: center;
-  width: 100%;
-  box-sizing: border-box;
-  margin-left: 20px;
+  align-items: center;
   flex-shrink: 0;
-
 }
 
 .sorting-button {
