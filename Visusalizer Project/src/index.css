@@ -64,7 +64,6 @@
 /* Sorting Page Styles */
 
 .content {
-  max-width: 600px;
   margin: 40px auto;
   height: 610px;
 }
@@ -159,28 +158,18 @@
 
 .main-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  padding-top: 32px;
-}
-
-
-.graphs-container {
-  display: flex;
-  justify-content: center;
   align-items: flex-start;
-  width: 100%;
-  max-width: 1200px;
-  overflow: visible; 
+  padding-top: 32px;
+  position: relative;
+  justify-content: center;
 }
 
 .graph-content {
   display: flex;
   flex-direction: column;
   align-items: center;
+  flex-shrink: 0;
 }
-
 
 .graph-box {
   width: 500px;
@@ -232,10 +221,12 @@
 .button-container {
   display: flex;
   flex-direction: column;
-  margin-left: 20px;
-  margin-right: 20px;
+  margin: 0 20px;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0; 
   height: 100%;
+  width: 200px;
 }
 
 .button-container h3{

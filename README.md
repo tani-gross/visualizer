@@ -19,7 +19,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ### Installation
  1. `git clone` this repository
- 2. `cd /visualizer/Visusalizer Project/` to navigate to project directory
+ 2. `cd` into /Visusalizer Project to navigate to project directory
  3. `npm install` to install necessary packages
  4. `npm start` to start the application
  5. Open [http://localhost:3000](http://localhost:3000) to view it in your browser

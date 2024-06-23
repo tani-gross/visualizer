@@ -1088,148 +1088,146 @@ const Graphs = () => {
     // JSX for rendering the component
     return (
         <div className="main-container">
-            <div className="graphs-container">
-                <div className="button-container">
-                    <h3>Edge Editing</h3>
+            <div className="button-container">
+                <h3>Graph Creation</h3>
+
+                {/* Graph Creation and Updating */}
+                {!selectedNode && (
+                <button className="graph-button" onClick={addNode}>Add Node</button>)}
+                {!selectedNode && (
+                <button className="graph-button" onClick={generateGraph}>Generate Graph</button>)}
+                {!selectedNode && nodes.length > 0 && (
+                <button className="graph-button" onClick={resetGraph}>Reset Graph</button>)}
+
+                {edges.length > 0 && (
+                    <h3>Edge Editing</h3>)}
+                {edges.length > 0 && (
                     <button className="graph-button" onClick={() => {if(edges.length>0){setShowWeights(!showWeights)}}}>
                         {showWeights ? 'Hide Weights' : 'Show Weights'}
-                    </button>
-                    {!selectedNode && (edges.length >= 1) && (
-                    <button className="graph-button" onClick={startRemovingEdge}>Remove Edge</button>)}
-                </div>
-                    
-                <div className="graph-content">
-                    <div className="slider-container">
-                        <h4 className="slider-label">Algorithm Step Speed:</h4>
-                        <div className="slider-content">
-                            <h4>100ms</h4>
-                            <input 
-                                type="range" 
-                                min="100" 
-                                max="2000" 
-                                step="100" 
-                                value={sliderValue} 
-                                onChange={handleSliderChange}
-                            />
-                            <h4>2000ms</h4>
-                        </div>
-                    </div>
-                    <div className="graph-box">
-                    <svg className="edges-svg" style={{ position: 'absolute', width: '100%', height: '100%' }}>
-                        {edges.map((edge, index) => {
-                            const midpoint = calculateMidpoint(edge);
-                            const angle = calculateAngle(edge);
-                            return (
-                                <React.Fragment key={index}>
-                                    <line
-                                        x1={edge.from.x + 10}
-                                        y1={edge.from.y + 10}
-                                        x2={edge.to.x + 10}
-                                        y2={edge.to.y + 10}
-                                        stroke={visitedEdges.find(e => e.from.id === edge.from.id && e.to.id === edge.to.id)?.color || (isRemovingEdge ? "red" : "grey")}
-                                        strokeWidth={isRemovingEdge ? 8 : 4}
-                                        onClick={() => handleEdgeClick(edge)}
-                                    />
-                                    {showWeights && (
-                                        <text
-                                            x={midpoint.x + 10}
-                                            y={midpoint.y + 7}
-                                            fill="black"
-                                            fontSize="12"
-                                            transform={`rotate(${angle}, ${midpoint.x + 10}, ${midpoint.y + 10})`}
-                                            textAnchor="middle"
-                                        >
-                                            {Math.round(calculateEdgeLength(edge))}
-                                        </text>)}
-                                </React.Fragment>
-                            );
-                        })}
-                    </svg>
-                        {nodes.map(node => (
-                            <Draggable
-                                key={node.id}
-                                position={{ x: node.x, y: node.y }}
-                                bounds="parent"
-                                onStart={handleMouseDown}
-                                onDrag={(e, data) => handleDrag(e, data, node)}
-                                onStop={handleDragStop}
-                            >
-                                <div
-                                    className="graph-node"
-                                    onClick={() => handleNodeClick(node)}
-                                    style={{
-                                        border: (isTSP || isBFS || isPrim || isDFS || isShortestPath) ? (startNode && startNode.id === node.id ? 'none' : '2px solid red') : (selectedNode && selectedNode.id === node.id ? '2px solid red' : 'none'),
-                                        backgroundColor: visitedNodes.some(vn => vn.id === node.id) ? (visitedNodes.find(vn => vn.id === node.id)?.color || componentColors[components.findIndex(comp => comp.some(n => n.id === node.id)) % componentColors.length] || "blue") : 'black',
-                                        pointerEvents: 'auto',
-                                        position: 'absolute'
-                                    }}
-                                >
-                                </div>
-                            </Draggable>
-                        ))}
-                    </div>
-                    <h3 class-name="status-text">{text}</h3>
-                </div>
-
-                <div className="button-container">
-                    <h3>Graph Creation</h3>
-
-                    {/* Graph Creation and Updating */}
-                    {!selectedNode && (
-                    <button className="graph-button" onClick={addNode}>Add Node</button>)}
-                    {!selectedNode && (
-                    <button className="graph-button" onClick={generateGraph}>Generate Graph</button>)}
-                    {!selectedNode && nodes.length > 0 && (
-                    <button className="graph-button" onClick={resetGraph}>Reset Graph</button>)}
-                    
-                    {/* Graph Creation and Updating when node selected */}
-                    {selectedNode && (
-                    <button className="graph-button" onClick={handleAddEdge}>Add Edge</button>)}
-                    {selectedNode && (
-                    <button className="graph-button" onClick={removeNode}>Remove Node</button>)}
-
-                    {/* Traversal and MST and Path*/}
-                    {edges.length > 0 && !selectedNode &&(
-                    <h3>Algorithms</h3>)}
-                    {edges.length > 0 && !selectedNode && !clickedTraversal && !clickedMST && !clickedPaths && (
-                    <button className="graph-button" onClick={setClickTraversal}>Traversals →</button>)}
-                    {edges.length > 0 && !selectedNode && !clickedTraversal && !clickedMST && !clickedPaths && (
-                    <button className="graph-button" onClick={setClickMST}>MSTs →</button>)}
-                    {edges.length > 0 && !selectedNode && !clickedTraversal && !clickedMST && !clickedPaths && (
-                    <button className="graph-button" onClick={setClickPath}>Paths →</button>)}
-
-
-                    {/* Specific Algorithms */}
-                    {clickedMST && !selectedNode && edges.length > 0 && (
-                    <button className="graph-button" onClick={animateKruskalsAlgorithm}>Kruskall</button>)}
-                    {clickedMST && !selectedNode && edges.length > 0 && (
-                    <button className="graph-button" onClick={startPrim}>Prim</button>)}
-
-                    {clickedTraversal && !selectedNode && edges.length > 0 && (
-                    <button className="graph-button" onClick={startDFS}>DFS</button>)}
-                    {clickedTraversal && !selectedNode && edges.length > 0 && (
-                    <button className="graph-button" onClick={startBFS}>BFS</button>)}
-
-                    {clickedPaths && !selectedNode && edges.length > 0 && (
-                    <button className="graph-button" onClick={startShortestPath}>Shortest Path</button>)}
-                    {clickedPaths && !selectedNode && edges.length > 0 && (
-                    <button className="graph-button" onClick={startTSP}>TSP</button>)}
-                    
-                    {!clickedPaths && !clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
-                    <button className="graph-button" onClick={findConnectedComponents}>Connected Components</button>)}
-                    {!clickedPaths && !clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
-                    <button className="graph-button" onClick={graphColoring}>Graph Coloring</button>)}
-                    
-                    
-
-                    {/* Back Button */}
-                    {(clickedTraversal || clickedMST || clickedPaths) && !selectedNode && (
-                    <button className="graph-button" onClick={goBack}>← Back</button>)} 
-                    
-                </div>
+                    </button>)}
+                {!selectedNode && (edges.length >= 1) && (
+                <button className="graph-button" onClick={startRemovingEdge}>Remove Edge</button>)}
+            </div>
                 
+            <div className="graph-content">
+                <div className="slider-container">
+                    <h4 className="slider-label">Algorithm Step Speed:</h4>
+                    <div className="slider-content">
+                        <h4>100ms</h4>
+                        <input 
+                            type="range" 
+                            min="100" 
+                            max="2000" 
+                            step="100" 
+                            value={sliderValue} 
+                            onChange={handleSliderChange}
+                        />
+                        <h4>2000ms</h4>
+                    </div>
+                </div>
+                <div className="graph-box">
+                <svg className="edges-svg" style={{ position: 'absolute', width: '100%', height: '100%' }}>
+                    {edges.map((edge, index) => {
+                        const midpoint = calculateMidpoint(edge);
+                        const angle = calculateAngle(edge);
+                        return (
+                            <React.Fragment key={index}>
+                                <line
+                                    x1={edge.from.x + 10}
+                                    y1={edge.from.y + 10}
+                                    x2={edge.to.x + 10}
+                                    y2={edge.to.y + 10}
+                                    stroke={visitedEdges.find(e => e.from.id === edge.from.id && e.to.id === edge.to.id)?.color || (isRemovingEdge ? "red" : "grey")}
+                                    strokeWidth={isRemovingEdge ? 8 : 4}
+                                    onClick={() => handleEdgeClick(edge)}
+                                />
+                                {showWeights && (
+                                    <text
+                                        x={midpoint.x + 10}
+                                        y={midpoint.y + 7}
+                                        fill="black"
+                                        fontSize="12"
+                                        transform={`rotate(${angle}, ${midpoint.x + 10}, ${midpoint.y + 10})`}
+                                        textAnchor="middle"
+                                    >
+                                        {Math.round(calculateEdgeLength(edge))}
+                                    </text>)}
+                            </React.Fragment>
+                        );
+                    })}
+                </svg>
+                    {nodes.map(node => (
+                        <Draggable
+                            key={node.id}
+                            position={{ x: node.x, y: node.y }}
+                            bounds="parent"
+                            onStart={handleMouseDown}
+                            onDrag={(e, data) => handleDrag(e, data, node)}
+                            onStop={handleDragStop}
+                        >
+                            <div
+                                className="graph-node"
+                                onClick={() => handleNodeClick(node)}
+                                style={{
+                                    border: (isTSP || isBFS || isPrim || isDFS || isShortestPath) ? (startNode && startNode.id === node.id ? 'none' : '2px solid red') : (selectedNode && selectedNode.id === node.id ? '2px solid red' : 'none'),
+                                    backgroundColor: visitedNodes.some(vn => vn.id === node.id) ? (visitedNodes.find(vn => vn.id === node.id)?.color || componentColors[components.findIndex(comp => comp.some(n => n.id === node.id)) % componentColors.length] || "blue") : 'black',
+                                    pointerEvents: 'auto',
+                                    position: 'absolute'
+                                }}
+                            >
+                            </div>
+                        </Draggable>
+                    ))}
+                </div>
+                <h3 class-name="status-text">{text}</h3>
             </div>
 
+            <div className="button-container">    
+                {/* Graph Creation and Updating when node selected */}
+                {selectedNode && (
+                <button className="graph-button" onClick={handleAddEdge}>Add Edge</button>)}
+                {selectedNode && (
+                <button className="graph-button" onClick={removeNode}>Remove Node</button>)}
+
+                {/* Traversal and MST and Path*/}
+                {edges.length > 0 && !selectedNode &&(
+                <h3>Algorithms</h3>)}
+                {edges.length > 0 && !selectedNode && !clickedTraversal && !clickedMST && !clickedPaths && (
+                <button className="graph-button" onClick={setClickTraversal}>Traversals →</button>)}
+                {edges.length > 0 && !selectedNode && !clickedTraversal && !clickedMST && !clickedPaths && (
+                <button className="graph-button" onClick={setClickMST}>MSTs →</button>)}
+                {edges.length > 0 && !selectedNode && !clickedTraversal && !clickedMST && !clickedPaths && (
+                <button className="graph-button" onClick={setClickPath}>Paths →</button>)}
+
+
+                {/* Specific Algorithms */}
+                {clickedMST && !selectedNode && edges.length > 0 && (
+                <button className="graph-button" onClick={animateKruskalsAlgorithm}>Kruskall</button>)}
+                {clickedMST && !selectedNode && edges.length > 0 && (
+                <button className="graph-button" onClick={startPrim}>Prim</button>)}
+
+                {clickedTraversal && !selectedNode && edges.length > 0 && (
+                <button className="graph-button" onClick={startDFS}>DFS</button>)}
+                {clickedTraversal && !selectedNode && edges.length > 0 && (
+                <button className="graph-button" onClick={startBFS}>BFS</button>)}
+
+                {clickedPaths && !selectedNode && edges.length > 0 && (
+                <button className="graph-button" onClick={startShortestPath}>Shortest Path</button>)}
+                {clickedPaths && !selectedNode && edges.length > 0 && (
+                <button className="graph-button" onClick={startTSP}>TSP</button>)}
+                
+                {!clickedPaths && !clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
+                <button className="graph-button" onClick={findConnectedComponents}>Connected Components</button>)}
+                {!clickedPaths && !clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
+                <button className="graph-button" onClick={graphColoring}>Graph Coloring</button>)}
+                
+                
+
+                {/* Back Button */}
+                {(clickedTraversal || clickedMST || clickedPaths) && !selectedNode && (
+                <button className="graph-button" onClick={goBack}>← Back</button>)} 
+                
+            </div>
         </div>
     );
 };
