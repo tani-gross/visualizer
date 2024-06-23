@@ -8,16 +8,21 @@
   box-sizing: border-box;
 }
 
-.navbar {
+/* Navigation Bar Styles */
+.navbar{
   padding: 20px;
   display: flex;
   align-items: center;
-  max-width: 650px;
   margin: 0 auto;
+}
+
+.navbar-top {
   border-bottom: 1px solid #f2f2f2;
 }
 
-/* Navigation Bar Styles */
+.navbar-bottom{
+  border-top: 1px solid #f2f2f2;
+}
 
 .navbar h1 {
   color: #f1356d;
@@ -25,6 +30,10 @@
 
 .navbar .links {
   margin-left: auto;
+}
+
+.navbar-bottom .contact-me {
+  margin-top: -5px;
 }
 
 .navbar a {
@@ -37,12 +46,18 @@
   color: #f1356d;
 }
 
+.logo-image {
+  width: 20px;
+  background-size: 10px;
+  margin-left: 0px;
+}
+
 /* Sorting Page Styles */
 
 .content {
   max-width: 600px;
   margin: 40px auto;
-  padding: 20px;
+  height: 610px;
 }
 
 .sorting-main-container {
@@ -268,3 +283,6 @@
   background: #4CAF50;
   cursor: pointer;
 }
+
+/* Home Page Styles */
+

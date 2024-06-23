@@ -2,6 +2,7 @@ import NavBar from './Components/Navbar';
 import Home from './Components/Home';
 import Sorting from './Components/Sorting';
 import Graphs from './Components/Graphs';
+import BottomBar from './Components/BottomBar';
 
 import {BrowserRouter , Route, Routes} from 'react-router-dom';
 
@@ -16,9 +17,9 @@ function App() {
             <Route path = "/" element={<Home />} />
             <Route path = "/sorting" element={<Sorting />} />
             <Route path = "/graphs" element={<Graphs />} />
-            
           </Routes>
         </div>
+        <BottomBar />
       </div>
     </BrowserRouter>
   );
