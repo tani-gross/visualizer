@@ -28,6 +28,7 @@ const Graphs = () => {
     const [endNode, setEndNode] = useState(null);
     const [componentColors] = useState(["blue", "green", "orange", "purple", "pink", "yellow", "gold", "coral", "crimson", "cyan", "darkgreen", "drakblue", "darkorange", "darkorchid", "darkred", "deeppink", "darkviolet", "deepskyblue", "forestgreen", "fuchsia"]);
     const [components, setComponents] = useState([]);
+    const [showWeights, setShowWeights] = useState(false);
     const [sliderValue, setSliderValue] = useState(250);
     const sliderValueRef = useRef(sliderValue);
 
@@ -50,6 +51,34 @@ const Graphs = () => {
         const dx = edge.from.x - edge.to.x;
         const dy = edge.from.y - edge.to.y;
         return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    // Function to calculate midpoiint of an edge
+    const calculateMidpoint = (edge) => {
+        const midX = (edge.from.x + edge.to.x) / 2;
+        const midY = (edge.from.y + edge.to.y) / 2;
+        return { x: midX, y: midY };
+    };
+    
+    // Fucntion to calculate angle of an edge
+    const calculateAngle = (edge) => {
+        const dx = edge.to.x - edge.from.x;
+        const dy = edge.to.y - edge.from.y;
+        let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    
+        if (dx >= 0 && dy < 0) {
+            // First quadrant: leave angle as is
+        } else if (dx < 0 && dy < 0) {
+            // Second quadrant: negate angle
+            angle += 180;
+        } else if (dx < 0 && dy >= 0) {
+            // Third quadrant: negate angle
+            angle -= 180;
+        } else if (dx >= 0 && dy >= 0) {
+            // Fourth quadrant: leave angle as is
+        }
+    
+        return angle;
     };
 
     // Function to add a new node to the graph
@@ -1060,6 +1089,9 @@ const Graphs = () => {
     return (
         <div className="main-container">
             <div className="graphs-container">
+                <button className="graph-button" onClick={() => {setShowWeights(!showWeights)}}>
+                    {showWeights ? 'Hide Weights' : 'Show Weights'}
+                </button>
                 <div className="graph-content">
                     <div className="slider-container">
                         <h4 className="slider-label">Algorithm Step Speed:</h4>
@@ -1077,20 +1109,36 @@ const Graphs = () => {
                         </div>
                     </div>
                     <div className="graph-box">
-                        <svg className="edges-svg" style={{ position: 'absolute', width: '100%', height: '100%' }}>
-                            {edges.map((edge, index) => (
-                                <line
-                                    key={index}
-                                    x1={edge.from.x + 10}
-                                    y1={edge.from.y + 10}
-                                    x2={edge.to.x + 10}
-                                    y2={edge.to.y + 10}
-                                    stroke={visitedEdges.find(e => e.from.id === edge.from.id && e.to.id === edge.to.id)?.color || (isRemovingEdge ? "red" : "grey")}
-                                    strokeWidth={isRemovingEdge ? 8 : 4}
-                                    onClick={() => handleEdgeClick(edge)}
-                                />
-                            ))}
-                        </svg>
+                    <svg className="edges-svg" style={{ position: 'absolute', width: '100%', height: '100%' }}>
+                        {edges.map((edge, index) => {
+                            const midpoint = calculateMidpoint(edge);
+                            const angle = calculateAngle(edge);
+                            return (
+                                <React.Fragment key={index}>
+                                    <line
+                                        x1={edge.from.x + 10}
+                                        y1={edge.from.y + 10}
+                                        x2={edge.to.x + 10}
+                                        y2={edge.to.y + 10}
+                                        stroke={visitedEdges.find(e => e.from.id === edge.from.id && e.to.id === edge.to.id)?.color || (isRemovingEdge ? "red" : "grey")}
+                                        strokeWidth={isRemovingEdge ? 8 : 4}
+                                        onClick={() => handleEdgeClick(edge)}
+                                    />
+                                    {showWeights && (
+                                        <text
+                                            x={midpoint.x + 10}
+                                            y={midpoint.y + 7}
+                                            fill="black"
+                                            fontSize="12"
+                                            transform={`rotate(${angle}, ${midpoint.x + 10}, ${midpoint.y + 10})`}
+                                            textAnchor="middle"
+                                        >
+                                            {Math.round(calculateEdgeLength(edge))}
+                                        </text>)}
+                                </React.Fragment>
+                            );
+                        })}
+                    </svg>
                         {nodes.map(node => (
                             <Draggable
                                 key={node.id}
