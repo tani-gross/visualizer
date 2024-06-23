@@ -21,6 +21,7 @@ const Graphs = () => {
     const [isDFS, setIsDFS] = useState(false);
     const [isBFS, setIsBFS] = useState(false);
     const [isPrim, setIsPrim] = useState(false);
+    const [isTSP, setIsTSP] = useState(false);
     const [algorithmRunning, setAlgorithmRunning] = useState(false);
     const [isShortestPath, setIsShortestPath] = useState(false);
     const [startNode, setStartNode] = useState(null);
@@ -267,6 +268,11 @@ const Graphs = () => {
                 findShortestPath(startNode, node);
                 setIsShortestPath(false);
             }
+        }else if(isTSP){
+            setVisitedNodes([]);
+            setVisitedEdges([]);
+            tsp(node);
+            setIsTSP(false);
         }else{
             if (selectedNode && selectedNode.id === node.id) {
                 setSelectedNode(null); 
@@ -939,7 +945,7 @@ const Graphs = () => {
         sliderValueRef.current = newValue;
     }
 
-    //Function to color graph
+    // Function to color graph
     const graphColoring = async () => {
         if(algorithmRunning || isRemovingEdge){
             return;
@@ -970,7 +976,83 @@ const Graphs = () => {
         setText("Graph Coloring Done!");
         setTimeout(resetEdges, 1000);
     }
+
+    // Function to start TSP
+    const startTSP = async () => {
+        if(algorithmRunning || isRemovingEdge){
+            return;
+        }
+
+        setIsTSP(true);
+        setAlgorithmRunning(true);
+        setText("Select Node to begin TSP");
+    }
+
+    // Function to animate TSP
+    const tsp = async (node) => {
+        setText("Solving TSP using nearest neighbor...");
+        const startNode = node;
+        const unvisited = new Set(nodes.map(node => node.id));
+        const visited = [];
+        const stack = [];
+        let currentNode = startNode;
     
+        unvisited.delete(currentNode.id);
+        visited.push(currentNode);
+        setVisitedNodes([{ id: currentNode.id, color: "blue" }]);
+    
+        while (unvisited.size > 0) {
+            let nearestNode = null;
+            let shortestDistance = Infinity;
+            let currentEdge = null;
+    
+            for (let neighborId of unvisited) {
+                const neighborNode = nodes.find(node => node.id === neighborId);
+                const edge = edges.find(e =>
+                    (e.from.id === currentNode.id && e.to.id === neighborNode.id) ||
+                    (e.from.id === neighborNode.id && e.to.id === currentNode.id)
+                );
+    
+                if (edge) {
+                    setVisitedEdges(prev => [...prev, { ...edge, color: "red" }]);
+                    await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
+                    const distance = calculateEdgeLength({ from: currentNode, to: neighborNode });
+                    setVisitedEdges(prev => prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)));
+                    if (distance < shortestDistance) {
+                        shortestDistance = distance;
+                        nearestNode = neighborNode;
+                        currentEdge = edge;
+                    }
+                }
+            }
+    
+            if (nearestNode && currentEdge) {
+                stack.push({ currentNode, nearestNode, shortestDistance });
+    
+                setVisitedEdges(prev => [...prev, { ...currentEdge, color: "blue" }]);
+                setVisitedNodes(prev => [...prev, { id: nearestNode.id, color: "blue" }]);
+    
+                await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
+    
+                currentNode = nearestNode;
+                unvisited.delete(currentNode.id);
+                visited.push(currentNode);
+            } else {
+                const previousState = stack.pop();
+                if (previousState) {
+                    currentNode = previousState.currentNode;
+                } else {
+                    break;
+                }
+            }
+        }
+    
+    
+        setText("TSP Solved!");
+        setTimeout(resetEdges, 1000);
+    };
+    
+
     // JSX for rendering the component
     return (
         <div className="main-container">
@@ -1019,7 +1101,7 @@ const Graphs = () => {
                                     className="graph-node"
                                     onClick={() => handleNodeClick(node)}
                                     style={{
-                                        border: (isBFS || isPrim || isDFS || isShortestPath) ? (startNode && startNode.id === node.id ? 'none' : '2px solid red') : (selectedNode && selectedNode.id === node.id ? '2px solid red' : 'none'),
+                                        border: (isTSP || isBFS || isPrim || isDFS || isShortestPath) ? (startNode && startNode.id === node.id ? 'none' : '2px solid red') : (selectedNode && selectedNode.id === node.id ? '2px solid red' : 'none'),
                                         backgroundColor: visitedNodes.some(vn => vn.id === node.id) ? (visitedNodes.find(vn => vn.id === node.id)?.color || componentColors[components.findIndex(comp => comp.some(n => n.id === node.id)) % componentColors.length] || "blue") : 'black',
                                         pointerEvents: 'auto',
                                         position: 'absolute'
@@ -1076,7 +1158,7 @@ const Graphs = () => {
                     {clickedPaths && !selectedNode && edges.length > 0 && (
                     <button className="graph-button" onClick={startShortestPath}>Shortest Path</button>)}
                     {clickedPaths && !selectedNode && edges.length > 0 && (
-                    <button className="graph-button" onClick={startBFS}>TSP</button>)}
+                    <button className="graph-button" onClick={startTSP}>TSP</button>)}
                     
                     {!clickedPaths && !clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
                     <button className="graph-button" onClick={findConnectedComponents}>Connected Components</button>)}
@@ -1086,7 +1168,7 @@ const Graphs = () => {
                     
 
                     {/* Back Button */}
-                    {(clickedTraversal || clickedMST) && !selectedNode && (
+                    {(clickedTraversal || clickedMST || clickedPaths) && !selectedNode && (
                     <button className="graph-button" onClick={goBack}>← Back</button>)} 
                     
                 </div>
