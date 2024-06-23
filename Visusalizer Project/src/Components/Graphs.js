@@ -35,6 +35,14 @@ const Graphs = () => {
     const currentEdgeColor = "red"; 
     const defaultEdgeColor = "gray";
 
+    // Function to reset edges to default state
+    const resetEdges = () => {
+        setVisitedEdges([]);
+        setVisitedNodes([]);
+        setText(startingText);
+        setAlgorithmRunning(false);
+    };
+
     // Function to calculate edge length
     const calculateEdgeLength = (edge) => {
         const dx = edge.from.x - edge.to.x;
@@ -263,7 +271,10 @@ const Graphs = () => {
                 setSelectedNode(null); 
                 setText(startingText);
             } else {
-                setSelectedNode(node);
+                if(!algorithmRunning){
+                    setSelectedNode(node);
+                }
+                
             }
         }
     }
@@ -401,7 +412,6 @@ const Graphs = () => {
     
         await dfsRecursive(startNode);
     
-        setAlgorithmRunning(false);
         setText("DFS Done!");
         setTimeout(resetEdges, 1000); 
     };
@@ -463,16 +473,8 @@ const Graphs = () => {
             }
         }
     
-        setAlgorithmRunning(false);
         setText("BFS Done!");
         setTimeout(resetEdges, 1000); // Wait 1 second before resetting edges
-    };
-    
-    // Function to reset edges to default state
-    const resetEdges = () => {
-        setVisitedEdges([]);
-        setVisitedNodes([]);
-        setText(startingText);
     };
     
     // Function to animate Kruskall's algorithm
@@ -536,7 +538,6 @@ const Graphs = () => {
                         setTimeout(() => animateComponentMST(foundComponents[componentIndex]), 0); 
                     } else {
                         setTimeout(resetEdges, 1000);
-                        setAlgorithmRunning(false);
                         setText("Kruskal's Algorithm completed!");
                     }
                 }
@@ -638,10 +639,7 @@ const Graphs = () => {
         const animateStep = async () => {
             if (visitedNodeSet.size === nodes.length || edgeQueue.length === 0) {
                 setText("Prim's Algorithm completed!");
-                setTimeout(() => {
-                    resetEdges();
-                    setAlgorithmRunning(false);
-                }, 1000); 
+                setTimeout(resetEdges, 1000);
                 return;
             }
     
@@ -808,7 +806,6 @@ const Graphs = () => {
                 setText("Connected Components Found!");
                 setTimeout(() => {
                     resetEdges();
-                    setAlgorithmRunning(false);
                     setComponents([]);
                 }, 1000); 
             }
@@ -914,13 +911,11 @@ const Graphs = () => {
     
         if (path[0] === startNode.id) {
             setTimeout(resetEdges, 1000);
-            setAlgorithmRunning(false);
             setText("Shortest Path Found");
             setStartNode(null);
             setEndNode(null);
         } else {
             setTimeout(resetEdges, 1000);
-            setAlgorithmRunning(false);
             setText("No Path Found");
             setStartNode(null);
             setEndNode(null);
