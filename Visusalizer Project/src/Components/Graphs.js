@@ -723,6 +723,7 @@ const Graphs = () => {
         
         setClickedMST(false);
         setClickedTraveral(false);
+        setClickedPaths(false);
         setAlgorithmRunning(false);
         setText(startingText);
     }
@@ -1052,7 +1053,6 @@ const Graphs = () => {
         setTimeout(resetEdges, 1000);
     };
     
-
     // JSX for rendering the component
     return (
         <div className="main-container">
