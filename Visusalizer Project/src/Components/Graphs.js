@@ -35,7 +35,7 @@ const Graphs = () => {
     const startingText = "Move Node, Select Node, or Press Button to Continue";
     const treeEdgeColor = "blue"; 
     const currentEdgeColor = "red"; 
-    const defaultEdgeColor = "gray";
+    const defaultEdgeColor = "grey";
 
     // Function to reset edges to default state
     const resetEdges = () => {
@@ -879,7 +879,7 @@ const Graphs = () => {
                     (e.from.id === neighborId && e.to.id === currentNodeId)
                 );
     
-                setVisitedEdges(prev => [...prev, { ...edge, color: "red" }]);
+                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
                 edgesToReset.push(edge);
                 await new Promise(resolve => setTimeout(resolve, sliderValueRef.current)); 
     
@@ -892,7 +892,7 @@ const Graphs = () => {
                     setVisitedEdges(prev => {
                         return prev.map(e =>
                             (e.from.id === edge.from.id && e.to.id === edge.to.id) || (e.from.id === edge.to.id && e.to.id === edge.from.id)
-                                ? { ...e, color: "grey" }
+                                ? { ...e, color: defaultEdgeColor }
                                 : e
                         );
                     });
@@ -911,22 +911,22 @@ const Graphs = () => {
         for (let i = 0; i < path.length - 1; i++) {
             const nodeId = path[i];
             const nextNodeId = path[i + 1];
-            setVisitedNodes(prev => [...prev, { id: nodeId, color: "blue" }]);
+            setVisitedNodes(prev => [...prev, { id: nodeId, color: treeEdgeColor }]);
             const edge = edges.find(e =>
                 (e.from.id === nodeId && e.to.id === nextNodeId) ||
                 (e.from.id === nextNodeId && e.to.id === nodeId)
             );
             setVisitedEdges(prev => prev.map(e =>
                 (e.from.id === edge.from.id && e.to.id === edge.to.id) || (e.from.id === edge.to.id && e.to.id === edge.from.id)
-                    ? { ...e, color: "blue" }
+                    ? { ...e, color: treeEdgeColor }
                     : e
             ));
             await new Promise(resolve => setTimeout(resolve, sliderValueRef.current)); 
         }
     
-        setVisitedNodes(prev => [...prev, { id: endNode.id, color: "blue" }]);
+        setVisitedNodes(prev => [...prev, { id: endNode.id, color: treeEdgeColor }]);
 
-        setVisitedEdges(prev => prev.map(e => e.color === "red" ? { ...e, color: "grey" } : e));
+        setVisitedEdges(prev => prev.map(e => e.color === currentEdgeColor ? { ...e, color: defaultEdgeColor } : e));
     
         if (path[0] === startNode.id) {
             setTimeout(resetEdges, 1000);
@@ -1002,7 +1002,7 @@ const Graphs = () => {
     
         unvisited.delete(currentNode.id);
         visited.push(currentNode);
-        setVisitedNodes([{ id: currentNode.id, color: "blue" }]);
+        setVisitedNodes([{ id: currentNode.id, color: treeEdgeColor }]);
     
         while (unvisited.size > 0) {
             let nearestNode = null;
@@ -1011,13 +1011,14 @@ const Graphs = () => {
     
             for (let neighborId of unvisited) {
                 const neighborNode = nodes.find(node => node.id === neighborId);
+                // eslint-disable-next-line
                 const edge = edges.find(e =>
                     (e.from.id === currentNode.id && e.to.id === neighborNode.id) ||
                     (e.from.id === neighborNode.id && e.to.id === currentNode.id)
                 );
     
                 if (edge) {
-                    setVisitedEdges(prev => [...prev, { ...edge, color: "red" }]);
+                    setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
                     await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
                     const distance = calculateEdgeLength({ from: currentNode, to: neighborNode });
                     setVisitedEdges(prev => prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)));
@@ -1032,8 +1033,8 @@ const Graphs = () => {
             if (nearestNode && currentEdge) {
                 stack.push({ currentNode, nearestNode, shortestDistance });
     
-                setVisitedEdges(prev => [...prev, { ...currentEdge, color: "blue" }]);
-                setVisitedNodes(prev => [...prev, { id: nearestNode.id, color: "blue" }]);
+                setVisitedEdges(prev => [...prev, { ...currentEdge, color: treeEdgeColor }]);
+                setVisitedNodes(prev => [...prev, { id: nearestNode.id, color: treeEdgeColor }]);
     
                 await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
     
