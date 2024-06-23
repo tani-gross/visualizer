@@ -1094,6 +1094,8 @@ const Graphs = () => {
                     <button className="graph-button" onClick={() => {if(edges.length>0){setShowWeights(!showWeights)}}}>
                         {showWeights ? 'Hide Weights' : 'Show Weights'}
                     </button>
+                    {!selectedNode && (edges.length >= 1) && (
+                    <button className="graph-button" onClick={startRemovingEdge}>Remove Edge</button>)}
                 </div>
                     
                 <div className="graph-content">
@@ -1179,8 +1181,6 @@ const Graphs = () => {
                     <button className="graph-button" onClick={generateGraph}>Generate Graph</button>)}
                     {!selectedNode && nodes.length > 0 && (
                     <button className="graph-button" onClick={resetGraph}>Reset Graph</button>)}
-                    {!selectedNode && (edges.length >= 1) && (
-                    <button className="graph-button" onClick={startRemovingEdge}>Remove Edge</button>)}
                     
                     {/* Graph Creation and Updating when node selected */}
                     {selectedNode && (
