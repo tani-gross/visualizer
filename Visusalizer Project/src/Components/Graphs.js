@@ -26,7 +26,7 @@ const Graphs = () => {
     const [isShortestPath, setIsShortestPath] = useState(false);
     const [startNode, setStartNode] = useState(null);
     const [endNode, setEndNode] = useState(null);
-    const [componentColors] = useState(["blue", "green", "orange", "purple", "pink"]);
+    const [componentColors] = useState(["blue", "green", "orange", "purple", "pink", "yellow", "gold", "coral", "crimson", "cyan", "darkgreen", "drakblue", "darkorange", "darkorchid", "darkred", "deeppink", "darkviolet", "deepskyblue", "forestgreen", "fuchsia"]);
     const [components, setComponents] = useState([]);
     const [sliderValue, setSliderValue] = useState(250);
     const sliderValueRef = useRef(sliderValue);
@@ -862,6 +862,8 @@ const Graphs = () => {
             });
     
             if (distances[currentNodeId] === Infinity) break; 
+
+            //set edge to red here?
     
             nodesToVisit.delete(currentNodeId);
     
