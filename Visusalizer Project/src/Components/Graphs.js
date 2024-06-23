@@ -1091,6 +1091,12 @@ const Graphs = () => {
             <div className="button-container">
                 <h3>Graph Creation</h3>
 
+                {/* Graph Creation and Updating when node selected */}
+                {selectedNode && (
+                <button className="graph-button" onClick={handleAddEdge}>Add Edge</button>)}
+                {selectedNode && (
+                <button className="graph-button" onClick={removeNode}>Remove Node</button>)}
+
                 {/* Graph Creation and Updating */}
                 {!selectedNode && (
                 <button className="graph-button" onClick={addNode}>Add Node</button>)}
@@ -1099,9 +1105,9 @@ const Graphs = () => {
                 {!selectedNode && nodes.length > 0 && (
                 <button className="graph-button" onClick={resetGraph}>Reset Graph</button>)}
 
-                {edges.length > 0 && (
+                {!selectedNode && edges.length > 0 && (
                     <h3>Edge Editing</h3>)}
-                {edges.length > 0 && (
+                {!selectedNode && edges.length > 0 && (
                     <button className="graph-button" onClick={() => {if(edges.length>0){setShowWeights(!showWeights)}}}>
                         {showWeights ? 'Hide Weights' : 'Show Weights'}
                     </button>)}
@@ -1183,12 +1189,6 @@ const Graphs = () => {
             </div>
 
             <div className="button-container">    
-                {/* Graph Creation and Updating when node selected */}
-                {selectedNode && (
-                <button className="graph-button" onClick={handleAddEdge}>Add Edge</button>)}
-                {selectedNode && (
-                <button className="graph-button" onClick={removeNode}>Remove Node</button>)}
-
                 {/* Traversal and MST and Path*/}
                 {edges.length > 0 && !selectedNode &&(
                 <h3>Algorithms</h3>)}
