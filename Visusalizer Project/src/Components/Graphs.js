@@ -17,6 +17,7 @@ const Graphs = () => {
     const [adjList, setAdjList] = useState([]);
     const [clickedTraversal, setClickedTraveral] = useState(false);
     const [clickedMST, setClickedMST] = useState(false);
+    const [clickedPaths, setClickedPaths] = useState(false);
     const [isDFS, setIsDFS] = useState(false);
     const [isBFS, setIsBFS] = useState(false);
     const [isPrim, setIsPrim] = useState(false);
@@ -698,6 +699,15 @@ const Graphs = () => {
         setClickedMST(true);
     }
 
+    // Function to set Paths mode
+    const setClickPath = () => {
+        if(algorithmRunning){
+            return;
+        }
+
+        setClickedPaths(true);
+    }
+
     // Functino to go back from algorithm selection
     const goBack = () => {
 
@@ -1041,13 +1051,15 @@ const Graphs = () => {
                     {selectedNode && (
                     <button className="graph-button" onClick={removeNode}>Remove Node</button>)}
 
-                    {/* Traversal and MST */}
+                    {/* Traversal and MST and Path*/}
                     {edges.length > 0 && !selectedNode &&(
                     <h3>Algorithms</h3>)}
-                    {edges.length > 0 && !selectedNode && !clickedTraversal && !clickedMST && (
+                    {edges.length > 0 && !selectedNode && !clickedTraversal && !clickedMST && !clickedPaths && (
                     <button className="graph-button" onClick={setClickTraversal}>Traversals →</button>)}
-                    {edges.length > 0 && !selectedNode && !clickedTraversal && !clickedMST && (
+                    {edges.length > 0 && !selectedNode && !clickedTraversal && !clickedMST && !clickedPaths && (
                     <button className="graph-button" onClick={setClickMST}>MSTs →</button>)}
+                    {edges.length > 0 && !selectedNode && !clickedTraversal && !clickedMST && !clickedPaths && (
+                    <button className="graph-button" onClick={setClickPath}>Paths →</button>)}
 
 
                     {/* Specific Algorithms */}
@@ -1055,15 +1067,20 @@ const Graphs = () => {
                     <button className="graph-button" onClick={animateKruskalsAlgorithm}>Kruskall</button>)}
                     {clickedMST && !selectedNode && edges.length > 0 && (
                     <button className="graph-button" onClick={startPrim}>Prim</button>)}
+
                     {clickedTraversal && !selectedNode && edges.length > 0 && (
                     <button className="graph-button" onClick={startDFS}>DFS</button>)}
                     {clickedTraversal && !selectedNode && edges.length > 0 && (
                     <button className="graph-button" onClick={startBFS}>BFS</button>)}
-                    {!clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
+
+                    {clickedPaths && !selectedNode && edges.length > 0 && (
                     <button className="graph-button" onClick={startShortestPath}>Shortest Path</button>)}
-                    {!clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
+                    {clickedPaths && !selectedNode && edges.length > 0 && (
+                    <button className="graph-button" onClick={startBFS}>TSP</button>)}
+                    
+                    {!clickedPaths && !clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
                     <button className="graph-button" onClick={findConnectedComponents}>Connected Components</button>)}
-                    {!clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
+                    {!clickedPaths && !clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
                     <button className="graph-button" onClick={graphColoring}>Graph Coloring</button>)}
                     
                     
