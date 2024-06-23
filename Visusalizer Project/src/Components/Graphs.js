@@ -1017,9 +1017,9 @@ const Graphs = () => {
                     {edges.length > 0 && !selectedNode &&(
                     <h3>Algorithms</h3>)}
                     {edges.length > 0 && !selectedNode && !clickedTraversal && !clickedMST && (
-                    <button className="graph-button" onClick={setClickTraversal}>Traversals</button>)}
+                    <button className="graph-button" onClick={setClickTraversal}>Traversals →</button>)}
                     {edges.length > 0 && !selectedNode && !clickedTraversal && !clickedMST && (
-                    <button className="graph-button" onClick={setClickMST}>MSTs</button>)}
+                    <button className="graph-button" onClick={setClickMST}>MSTs →</button>)}
 
 
                     {/* Specific Algorithms */}
@@ -1039,7 +1039,7 @@ const Graphs = () => {
 
                     {/* Back Button */}
                     {(clickedTraversal || clickedMST) && !selectedNode && (
-                    <button className="graph-button" onClick={goBack}>Back</button>)} 
+                    <button className="graph-button" onClick={goBack}>← Back</button>)} 
                     
                 </div>
                 
