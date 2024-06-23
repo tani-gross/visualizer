@@ -9,6 +9,14 @@ const Sorting = () => {
     const [speed, setSpeed] = useState(50);
     const barsRef = useRef([]);
     const speedRef = useRef(speed);
+    const isMountedRef = useRef(false);
+
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     useEffect(() => {
         generateBars(numBars);
@@ -261,20 +269,24 @@ const Sorting = () => {
         const barElements = barsRef.current;
         
         if (barElements[i] && barElements[j]) {
-
             barElements[i].classList.add('active');
             barElements[j].classList.add('active');
             
             [barsArray[i], barsArray[j]] = [barsArray[j], barsArray[i]];
-
-            setBars([...barsArray]);
-
-            await sleep(125-ms);
-
-            barElements[i].classList.remove('active');
-            barElements[j].classList.remove('active');
+    
+            if (isMountedRef.current) {
+                setBars([...barsArray]);
+            }
+    
+            await sleep(125 - ms);
+    
+            if (barElements[i] && barElements[j]) {
+                barElements[i].classList.remove('active');
+                barElements[j].classList.remove('active');
+            }
         }
     }
+    
 
     const sleep = (ms) => {
         return new Promise((resolve) => setTimeout(resolve, ms));
