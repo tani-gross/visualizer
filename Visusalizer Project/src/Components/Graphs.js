@@ -2,6 +2,7 @@ import React, {useState, useRef } from 'react';
 import Draggable from 'react-draggable';
 
 const Graphs = () => {
+    // State variables to manage graph nodes, edges, and various UI states
     const [text, setText] = useState("Add Node or Generate Graph to Begin");
     const [nodes, setNodes] = useState([]);
     const [nodeCount, setNodeCount] = useState(0);
@@ -27,11 +28,21 @@ const Graphs = () => {
     const [components, setComponents] = useState([]);
     const [sliderValue, setSliderValue] = useState(250);
     const sliderValueRef = useRef(sliderValue);
+
+    // Constants for UI text and colors
     const startingText = "Move Node, Select Node, or Press Button to Continue";
     const treeEdgeColor = "blue"; 
     const currentEdgeColor = "red"; 
     const defaultEdgeColor = "gray";
 
+    // Function to calculate edge length
+    const calculateEdgeLength = (edge) => {
+        const dx = edge.from.x - edge.to.x;
+        const dy = edge.from.y - edge.to.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    // Function to add a new node to the graph
     const addNode = () => {
         if(algorithmRunning){
             return;
@@ -53,6 +64,114 @@ const Graphs = () => {
         setNodeCount(nodeCount + 1);
     };
 
+    // Function to generate a random graph
+    const generateGraph = () => {
+        if(algorithmRunning || isRemovingEdge){
+            return;
+        }
+
+        var numNodes = 0;
+        var numEdges = -1;
+
+        do{
+            const response = prompt("Enter the number of nodes:", "");
+
+            if(isNaN(response)){
+                alert("Invalid input. Please enter numbers only");
+                continue;
+            }
+
+            if(response <= 0 || response > 20){
+                alert("Invalid input. Number of nodes must be between 1 and 20");
+                continue;
+            }
+
+            numNodes = response;
+
+        }while(numNodes === 0);
+
+        do{
+            const response = prompt("Enter the number of edges:", "");
+
+            if(isNaN(response)){
+                alert("Invalid input. Please enter numbers only");
+                continue;
+            }
+
+            if(response > ((numNodes * (numNodes - 1)) / 2)){
+                alert("Invalid input. Too many edges for the graph");
+                continue;
+            }
+
+            if(response < 0){
+                alert("Invalid input. Not enough edges");
+                continue;
+            }
+
+            numEdges = response;
+
+        }while(numEdges === -1);
+
+        setNodes([]);
+        setEdges([]);
+        setAdjList({});
+        setNodeCount(0);
+        setVisitedNodes([]);
+        setVisitedEdges([]);
+        setSelectedNode(null);
+        setText(startingText);
+    
+        const newNodes = [];
+        const newEdges = [];
+        const newAdjList = {};
+    
+
+        const gridSize = Math.ceil(Math.sqrt(numNodes));
+        const areaWidth = 500; 
+        const areaHeight = 500; 
+        const margin = 10;
+        const gridSpacingX = (areaWidth - 2 * margin) / gridSize;
+        const gridSpacingY = (areaHeight - 2 * margin) / gridSize;
+
+        for (let i = 0; i < numNodes; i++) {
+            const row = Math.floor(i / gridSize);
+            const col = i % gridSize;
+            const x = margin + col * gridSpacingX + Math.random() * gridSpacingX * 0.9;
+            const y = margin + row * gridSpacingY + Math.random() * gridSpacingY * 0.9;
+
+            const newNode = {
+                id: i,
+                x: x,
+                y: y,
+            };
+            newNodes.push(newNode);
+            newAdjList[i] = [];
+        }
+    
+        while (newEdges.length < numEdges) {
+            const from = newNodes[Math.floor(Math.random() * numNodes)];
+            const to = newNodes[Math.floor(Math.random() * numNodes)];
+            if (from.id !== to.id) {
+                const edgeExists = newEdges.some(edge =>
+                    (edge.from.id === from.id && edge.to.id === to.id) ||
+                    (edge.from.id === to.id && edge.to.id === from.id)
+                );
+                if (!edgeExists) {
+                    const newEdge = { from, to };
+                    newEdges.push(newEdge);
+                    newAdjList[from.id].push(to.id);
+                    newAdjList[to.id].push(from.id);
+                }
+            }
+        }
+    
+        setNodes(newNodes);
+        setEdges(newEdges);
+        setAdjList(newAdjList);
+        setNodeCount(newNodes.length);
+    };
+
+    // Function to reset the graph
     const resetGraph = () => {
         if(algorithmRunning){
             return;
@@ -65,10 +184,10 @@ const Graphs = () => {
         setText(startingText);
     };
     
+    // Function to remove a selected node form the graph
     const removeNode = () => {
         if (selectedNode == null) return;
 
-        // Remove the selected node and any connected edges
         setNodes(nodes.filter(node => node.id !== selectedNode.id));
         setEdges(edges.filter(edge => edge.from.id !== selectedNode.id && edge.to.id !== selectedNode.id));
         setAdjList(prevAdjList => {
@@ -82,6 +201,7 @@ const Graphs = () => {
         setSelectedNode(null);
     };
 
+    // Function to handle clicking on a node
     const handleNodeClick = (node) => {
         if (dragging) {
             return;
@@ -140,7 +260,7 @@ const Graphs = () => {
             }
         }else{
             if (selectedNode && selectedNode.id === node.id) {
-                setSelectedNode(null); // Unhighlight and remove selection
+                setSelectedNode(null); 
                 setText(startingText);
             } else {
                 setSelectedNode(node);
@@ -148,41 +268,12 @@ const Graphs = () => {
         }
     }
 
+    // Function to handle mouse down event for dragging
     const handleMouseDown = () => {
         setDragging(false);
     };
 
-    const handleAddEdge = () => {
-        if (selectedNode === null) return;
-
-        if(((nodes.length * (nodes.length - 1)) / 2) === edges.length){
-            alert("cannot add another edge");
-            return;
-        }
-
-        if (nodes.length < 2) {
-            alert("You need at least two nodes to add an edge.");
-            return;
-        }
-        setIsAddingEdge(true);
-        setText("Click another node to add edge");
-    };
-
-    const handleEdgeClick = (edge) => {
-        if (isRemovingEdge) {
-            setEdges(edges.filter(e => e !== edge));
-            setIsRemovingEdge(false);
-    
-            setAdjList(prevAdjList => {
-                const newAdjList = { ...prevAdjList };
-                newAdjList[edge.from.id] = newAdjList[edge.from.id].filter(id => id !== edge.to.id);
-                newAdjList[edge.to.id] = newAdjList[edge.to.id].filter(id => id !== edge.from.id);
-                return newAdjList;
-            });
-            setText(startingText);
-        }
-    }
-
+    // Function to start removing an edge
     const startRemovingEdge = () => {
         if(algorithmRunning){
             return;
@@ -202,6 +293,40 @@ const Graphs = () => {
         setIsRemovingEdge(true);
     }
 
+    // Function to initiate adding an edge
+    const handleAddEdge = () => {
+        if (selectedNode === null) return;
+
+        if(((nodes.length * (nodes.length - 1)) / 2) === edges.length){
+            alert("cannot add another edge");
+            return;
+        }
+
+        if (nodes.length < 2) {
+            alert("You need at least two nodes to add an edge.");
+            return;
+        }
+        setIsAddingEdge(true);
+        setText("Click another node to add edge");
+    };
+
+    // Function to handle clicking on an edge
+    const handleEdgeClick = (edge) => {
+        if (isRemovingEdge) {
+            setEdges(edges.filter(e => e !== edge));
+            setIsRemovingEdge(false);
+    
+            setAdjList(prevAdjList => {
+                const newAdjList = { ...prevAdjList };
+                newAdjList[edge.from.id] = newAdjList[edge.from.id].filter(id => id !== edge.to.id);
+                newAdjList[edge.to.id] = newAdjList[edge.to.id].filter(id => id !== edge.from.id);
+                return newAdjList;
+            });
+            setText(startingText);
+        }
+    }
+
+    // Function to handle dragging a node
     const handleDrag = (e, data, node) => {
         setDragging(true);
         node.x = data.x;
@@ -209,13 +334,14 @@ const Graphs = () => {
         setNodes([...nodes]);
     };
 
+    // Function to handle stopping the drag of a node
     const handleDragStop = () => {
-        // Allow some time for the onClick to fire if it was just a click
         setTimeout(() => {
             setDragging(false);
         }, 0);
     };
     
+    // Function to start DFS
     const startDFS = () => {
         if(algorithmRunning|| isRemovingEdge){
             return;
@@ -225,15 +351,7 @@ const Graphs = () => {
         setText("Select Node to begin DFS");
     }
 
-    const startBFS = () => {
-        if(algorithmRunning || isRemovingEdge){
-            return;
-        }
-        setIsBFS(true);
-        setAlgorithmRunning(true);
-        setText("Select Node to begin BFS");
-    }
-
+    // DFS implementatoin
     const dfs = async (startNode) => {
         setText("DFS in progress...");
         const visitedNodeSet = new Set();
@@ -257,26 +375,21 @@ const Graphs = () => {
                 );
     
                 if (edge) {
-                    // Check if the edge is not blue
                     const isEdgeNotBlue = edge.color !== treeEdgeColor;
 
                     if (isEdgeNotBlue) {
-                        // Highlight the current edge
                         setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
 
-                        // Wait for the specified interval if the edge is about to be highlighted
                         await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
                     }
         
                     if (!visitedNodeSet.has(neighborId)) {
-                        // Confirm the edge and change it to the tree edge color immediately
                         setVisitedEdges(prev => [
                             ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
                             { ...edge, color: treeEdgeColor }
                         ]);
                         await dfsRecursive(neighborNode);
                     } else {
-                        // If the edge does not lead to an undiscovered node, revert it to default color
                         setVisitedEdges(prev => [
                             ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id && e.color !== treeEdgeColor)),
                             { ...edge, color: defaultEdgeColor }
@@ -290,9 +403,20 @@ const Graphs = () => {
     
         setAlgorithmRunning(false);
         setText("DFS Done!");
-        setTimeout(resetEdges, 1000); // Wait 1 second before resetting edges
+        setTimeout(resetEdges, 1000); 
     };
-        
+
+    // Function to start BFS
+    const startBFS = () => {
+        if(algorithmRunning || isRemovingEdge){
+            return;
+        }
+        setIsBFS(true);
+        setAlgorithmRunning(true);
+        setText("Select Node to begin BFS");
+    }
+
+    // BFS implementation
     const bfs = async (startNode) => {
         setText("BFS in progress...");
         const visitedNodeSet = new Set();
@@ -312,14 +436,11 @@ const Graphs = () => {
                 );
     
                 if (edge) {
-                    // Check if the edge is not blue
                     const isEdgeNotBlue = edge.color !== treeEdgeColor;
     
                     if (isEdgeNotBlue) {
-                        // Highlight the current edge
                         setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
     
-                        // Wait for the specified interval if the edge is about to be highlighted
                         await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
                     }
     
@@ -327,14 +448,12 @@ const Graphs = () => {
                         visitedNodeSet.add(neighborId);
                         queue.push(neighborNode);
     
-                        // Confirm the edge and change it to the tree edge color immediately
                         setVisitedEdges(prev => [
                             ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
                             { ...edge, color: treeEdgeColor }
                         ]);
                         setVisitedNodes(prev => [...prev, { id: neighborId, color: treeEdgeColor }]);
                     } else if (isEdgeNotBlue) {
-                        // If the edge does not lead to an undiscovered node, revert it to default color
                         setVisitedEdges(prev => [
                             ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id && e.color !== treeEdgeColor)),
                             { ...edge, color: defaultEdgeColor }
@@ -349,122 +468,14 @@ const Graphs = () => {
         setTimeout(resetEdges, 1000); // Wait 1 second before resetting edges
     };
     
+    // Function to reset edges to default state
     const resetEdges = () => {
         setVisitedEdges([]);
         setVisitedNodes([]);
         setText(startingText);
     };
-
-    const generateGraph = () => {
-        if(algorithmRunning || isRemovingEdge){
-            return;
-        }
-
-        var numNodes = 0;
-        var numEdges = -1;
-
-        do{
-            const response = prompt("Enter the number of nodes:", "");
-
-            if(isNaN(response)){
-                alert("Invalid input. Please enter numbers only");
-                continue;
-            }
-
-            if(response <= 0 || response > 20){
-                alert("Invalid input. Number of nodes must be between 1 and 20");
-                continue;
-            }
-
-            numNodes = response;
-
-        }while(numNodes === 0);
-
-        do{
-            const response = prompt("Enter the number of edges:", "");
-
-            if(isNaN(response)){
-                alert("Invalid input. Please enter numbers only");
-                continue;
-            }
-
-            if(response > ((numNodes * (numNodes - 1)) / 2)){
-                alert("Invalid input. Too many edges for the graph");
-                continue;
-            }
-
-            if(response < 0){
-                alert("Invalid input. Not enough edges");
-                continue;
-            }
-
-            numEdges = response;
-
-        }while(numEdges === -1);
-
-
-        // Clear current graph
-        setNodes([]);
-        setEdges([]);
-        setAdjList({});
-        setNodeCount(0);
-        setVisitedNodes([]);
-        setVisitedEdges([]);
-        setSelectedNode(null);
-        setText(startingText);
     
-        const newNodes = [];
-        const newEdges = [];
-        const newAdjList = {};
-    
-        // Calculate grid size
-        const gridSize = Math.ceil(Math.sqrt(numNodes));
-        const areaWidth = 500; // Width of the area
-        const areaHeight = 500; // Height of the area
-        const margin = 10; // Margin to keep nodes within the grid
-        const gridSpacingX = (areaWidth - 2 * margin) / gridSize;
-        const gridSpacingY = (areaHeight - 2 * margin) / gridSize;
-
-        // Generate random nodes
-        for (let i = 0; i < numNodes; i++) {
-            const row = Math.floor(i / gridSize);
-            const col = i % gridSize;
-            const x = margin + col * gridSpacingX + Math.random() * gridSpacingX * 0.9;
-            const y = margin + row * gridSpacingY + Math.random() * gridSpacingY * 0.9;
-
-            const newNode = {
-                id: i,
-                x: x,
-                y: y,
-            };
-            newNodes.push(newNode);
-            newAdjList[i] = [];
-        }
-    
-        // Generate random edges
-        while (newEdges.length < numEdges) {
-            const from = newNodes[Math.floor(Math.random() * numNodes)];
-            const to = newNodes[Math.floor(Math.random() * numNodes)];
-            if (from.id !== to.id) {
-                const edgeExists = newEdges.some(edge =>
-                    (edge.from.id === from.id && edge.to.id === to.id) ||
-                    (edge.from.id === to.id && edge.to.id === from.id)
-                );
-                if (!edgeExists) {
-                    const newEdge = { from, to };
-                    newEdges.push(newEdge);
-                    newAdjList[from.id].push(to.id);
-                    newAdjList[to.id].push(from.id);
-                }
-            }
-        }
-    
-        setNodes(newNodes);
-        setEdges(newEdges);
-        setAdjList(newAdjList);
-        setNodeCount(newNodes.length);
-    };
-    
+    // Function to animate Kruskall's algorithm
     const animateKruskalsAlgorithm = () => {
         if (algorithmRunning || isRemovingEdge) {
             return;
@@ -479,7 +490,6 @@ const Graphs = () => {
         let currentComponentNodes = [];
         let uf;
     
-        // Find all components first
         const visitedNodeSet = new Set();
         const foundComponents = [];
     
@@ -508,7 +518,7 @@ const Graphs = () => {
         setComponents(foundComponents);
     
         const animateComponentMST = (component) => {
-            uf = new UnionFind(nodeCount); // Reset Union-Find for each component
+            uf = new UnionFind(nodeCount); 
             currentComponentEdges = [];
             currentComponentNodes = component.map(node => node.id);
             let edgeIndex = 0;
@@ -519,11 +529,11 @@ const Graphs = () => {
                     const { from, to } = currentComponentEdges[index];
                     setVisitedNodes(prev => [...prev, { id: from.id, color }, { id: to.id, color }]);
                     setVisitedEdges(prev => [...prev, currentComponentEdges[index]]);
-                    setTimeout(() => highlightNodesAndEdges(index + 1), sliderValueRef.current); // Adjust the interval as needed
+                    setTimeout(() => highlightNodesAndEdges(index + 1), sliderValueRef.current); 
                 } else {
                     componentIndex++;
                     if (componentIndex < foundComponents.length) {
-                        setTimeout(() => animateComponentMST(foundComponents[componentIndex]), 0); // Adjust the interval as needed
+                        setTimeout(() => animateComponentMST(foundComponents[componentIndex]), 0); 
                     } else {
                         setTimeout(resetEdges, 1000);
                         setAlgorithmRunning(false);
@@ -560,24 +570,25 @@ const Graphs = () => {
             setAlgorithmRunning(false);
         }
     };
-    
+
+     // Union-Find data structure for Kruskal's algorithm
     class UnionFind {
         constructor(size) {
             this.parent = Array(size).fill(null).map((_, index) => index);
             this.rank = Array(size).fill(0);
         }
-    
+
         find(node) {
             if (this.parent[node] !== node) {
-                this.parent[node] = this.find(this.parent[node]); // Path compression
+                this.parent[node] = this.find(this.parent[node]);
             }
             return this.parent[node];
         }
-    
+
         union(node1, node2) {
             const root1 = this.find(node1);
             const root2 = this.find(node2);
-    
+
             if (root1 !== root2) {
                 if (this.rank[root1] > this.rank[root2]) {
                     this.parent[root2] = root1;
@@ -591,6 +602,7 @@ const Graphs = () => {
         }
     }
 
+    // Function to start Prim's algorithm
     const startPrim = () => {
         if(algorithmRunning || isRemovingEdge){
             return;
@@ -600,6 +612,7 @@ const Graphs = () => {
         setText("Select Node to begin Prim's Algorithm");
     }
 
+    // Function to animate Prim's algorithm
     const animatePrimsAlgorithm = async (startNode) => {
         setText("Running Prim's Algorithm...");
         const visitedNodeSet = new Set();
@@ -619,7 +632,7 @@ const Graphs = () => {
                     }
                 }
             });
-            edgeQueue.sort((a, b) => a.length - b.length); // Sort edges by length
+            edgeQueue.sort((a, b) => a.length - b.length); 
         };
     
         const animateStep = async () => {
@@ -628,17 +641,15 @@ const Graphs = () => {
                 setTimeout(() => {
                     resetEdges();
                     setAlgorithmRunning(false);
-                }, 1000); // Wait 1 second before resetting edges
+                }, 1000); 
                 return;
             }
     
-            const edgesToHighlight = edgeQueue.slice(0, 1); // Get the next edge to process
+            const edgesToHighlight = edgeQueue.slice(0, 1); 
             edgesToHighlight.forEach(edge => {
-                // Highlight the current edge in red
                 setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
             });
     
-            // Wait for the specified interval to show the edges being processed
             await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
     
             const edge = edgeQueue.shift();
@@ -647,7 +658,6 @@ const Graphs = () => {
             const toInMST = visitedNodeSet.has(to.id);
     
             if ((fromInMST && !toInMST) || (!fromInMST && toInMST)) {
-                // Confirm the edge and change it to the tree edge color
                 setVisitedEdges(prev => [
                     ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
                     { ...edge, color: treeEdgeColor }
@@ -659,7 +669,6 @@ const Graphs = () => {
                     addEdges(from);
                 }
             } else {
-                // Revert the edge color to default if it is not added to the MST
                 setVisitedEdges(prev => [
                     ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
                     { ...edge, color: defaultEdgeColor }
@@ -673,6 +682,7 @@ const Graphs = () => {
         animateStep();
     };
     
+    // Function to set traversal mode
     const setClickTraversal = () => {
         if(algorithmRunning){
             return;
@@ -681,6 +691,7 @@ const Graphs = () => {
         setClickedTraveral(true);
     }
 
+    // Function to set MST mode
     const setClickMST = () => {
         if(algorithmRunning){
             return;
@@ -689,6 +700,7 @@ const Graphs = () => {
         setClickedMST(true);
     }
 
+    // Functino to go back from algorithm selection
     const goBack = () => {
 
         if(algorithmRunning || isRemovingEdge){
@@ -701,6 +713,7 @@ const Graphs = () => {
         setText(startingText);
     }
 
+    // Function to find connected components in a graph
     const findConnectedComponents = async () => {
         if (algorithmRunning || isRemovingEdge) {
             return;
@@ -730,26 +743,21 @@ const Graphs = () => {
                 );
     
                 if (edge) {
-                    // Check if the edge is not already in the component color
                     const isEdgeNotInComponentColor = edge.color !== componentColor;
     
                     if (isEdgeNotInComponentColor) {
-                        // Highlight the current edge in red
                         setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
     
-                        // Wait for the specified interval if the edge is about to be highlighted
                         await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
                     }
     
                     if (!visitedNodeSet.has(neighborId)) {
-                        // Confirm the edge and change it to the component color immediately
                         setVisitedEdges(prev => [
                             ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
                             { ...edge, color: componentColor }
                         ]);
                         await dfsRecursive(neighborNode, component, componentColor);
                     } else {
-                        // If the edge does not lead to an undiscovered node, change it to component color
                         setVisitedEdges(prev => [
                             ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id && e.color !== componentColor)),
                             { ...edge, color: componentColor }
@@ -769,7 +777,7 @@ const Graphs = () => {
             }
         }
     
-        setComponents(foundComponents); // Store components in the state
+        setComponents(foundComponents); 
     
         const animateComponents = (index) => {
             if (index < foundComponents.length) {
@@ -795,20 +803,21 @@ const Graphs = () => {
     
                 setVisitedNodes(prev => [...prev, ...newVisitedNodes]);
                 setVisitedEdges(prev => [...prev, ...newVisitedEdges.map(edge => ({ ...edge, color }))]);
-                setTimeout(() => animateComponents(index + 1), sliderValueRef.current); // Adjust the interval as needed
+                setTimeout(() => animateComponents(index + 1), sliderValueRef.current); 
             } else {
                 setText("Connected Components Found!");
                 setTimeout(() => {
                     resetEdges();
                     setAlgorithmRunning(false);
                     setComponents([]);
-                }, 1000); // Adjust the interval as needed
+                }, 1000); 
             }
         };
     
         animateComponents(0);
     };
     
+    // Function to start shortest path algorithm
     const startShortestPath = () => {
         if(algorithmRunning || isRemovingEdge){
             return;
@@ -819,19 +828,13 @@ const Graphs = () => {
         setText("Select Start Node for Shortest Path");
     }
 
-    const calculateEdgeLength = (edge) => {
-        const dx = edge.from.x - edge.to.x;
-        const dy = edge.from.y - edge.to.y;
-        return Math.sqrt(dx * dx + dy * dy);
-    };
-
+    // Function to find the shortest path between two nodes
     const findShortestPath = async (startNode, endNode) => {
         const distances = {};
         const previousNodes = {};
         const nodesToVisit = new Set(nodes.map(node => node.id));
         const edgesToReset = [];
     
-        // Initialize distances and previousNodes
         nodes.forEach(node => {
             distances[node.id] = Infinity;
             previousNodes[node.id] = null;
@@ -844,7 +847,7 @@ const Graphs = () => {
                 return distances[nodeId] < distances[minNodeId] ? nodeId : minNodeId;
             });
     
-            if (distances[currentNodeId] === Infinity) break; // All remaining nodes are inaccessible from startNode
+            if (distances[currentNodeId] === Infinity) break; 
     
             nodesToVisit.delete(currentNodeId);
     
@@ -860,10 +863,9 @@ const Graphs = () => {
                     (e.from.id === neighborId && e.to.id === currentNodeId)
                 );
     
-                // Temporarily highlight the edge in red
                 setVisitedEdges(prev => [...prev, { ...edge, color: "red" }]);
                 edgesToReset.push(edge);
-                await new Promise(resolve => setTimeout(resolve, sliderValueRef.current)); // Adjust the interval as needed
+                await new Promise(resolve => setTimeout(resolve, sliderValueRef.current)); 
     
                 const altDistance = currentNodeDistance + calculateEdgeLength(edge);
     
@@ -871,7 +873,6 @@ const Graphs = () => {
                     distances[neighborId] = altDistance;
                     previousNodes[neighborId] = currentNodeId;
                 } else {
-                    // Immediately revert the edge color back to grey if it's not part of the shortest path
                     setVisitedEdges(prev => {
                         return prev.map(e =>
                             (e.from.id === edge.from.id && e.to.id === edge.to.id) || (e.from.id === edge.to.id && e.to.id === edge.from.id)
@@ -890,8 +891,7 @@ const Graphs = () => {
             path.unshift(currentNodeId);
             currentNodeId = previousNodes[currentNodeId];
         }
-    
-        // Highlight the nodes and edges in the shortest path in blue
+
         for (let i = 0; i < path.length - 1; i++) {
             const nodeId = path[i];
             const nextNodeId = path[i + 1];
@@ -905,10 +905,9 @@ const Graphs = () => {
                     ? { ...e, color: "blue" }
                     : e
             ));
-            await new Promise(resolve => setTimeout(resolve, sliderValueRef.current)); // Adjust the interval as needed
+            await new Promise(resolve => setTimeout(resolve, sliderValueRef.current)); 
         }
     
-        // Highlight the last node in blue
         setVisitedNodes(prev => [...prev, { id: endNode.id, color: "blue" }]);
 
         setVisitedEdges(prev => prev.map(e => e.color === "red" ? { ...e, color: "grey" } : e));
@@ -928,12 +927,14 @@ const Graphs = () => {
         }
     };
     
+    // Function to handle slider change
     const handleSliderChange = (event) => {
         const newValue = event.target.value;
         setSliderValue(newValue);
         sliderValueRef.current = newValue;
     }
     
+    // JSX for rendering the component
     return (
         <div className="main-container">
             <div className="graphs-container">
