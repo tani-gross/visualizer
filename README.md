@@ -15,7 +15,7 @@ This project is a visuzlier for algorithms and data structures that has two main
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ### Prerequisites
-1. Node.js (Install [https://nodejs.org/en/download/prebuilt-installer](here))
+1. Node.js Install [https://nodejs.org/en/download/prebuilt-installer](here)
 
 ### Installation
  1. `git clone` this repository
