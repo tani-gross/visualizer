@@ -63,10 +63,10 @@
 .sorting-button-container {
   display:flex;
   flex-direction: column;
-  justify-content: center; /* Align buttons to the left */
+  justify-content: center;
   width: 100%;
   box-sizing: border-box;
-  margin-left: 20px; /* Ensure buttons are aligned to the left */
+  margin-left: 20px;
   flex-shrink: 0;
 
 }
@@ -98,7 +98,7 @@
 }
 
 .sorting-button:hover {
-  background-color: rgb(180, 171, 171); /* Hover background color */
+  background-color: rgb(180, 171, 171);
   border: rgb(180, 171, 171);
 }
 
@@ -108,7 +108,7 @@
   justify-content: center;
   bottom: 100px;
   width: 100%; 
-  padding: 10px; /* Add padding to ensure bars don't touch the edges */
+  padding: 10px;
   margin: 0 auto;
   flex-grow: 1;
 }
@@ -117,15 +117,15 @@
   background-color: green;
   transition: transform 0.5s ease-in-out;
   margin:0;
-  border: 1px solid white; /* Add a thin border to each bar */
+  border: 1px solid white; 
 }
 
 .bar.active {
-  background-color: red; /* Change this color as needed */
+  background-color: red; 
 }
 
 .bar.sorted {
-  background-color: turquoise; /* Change this color as needed */
+  background-color: turquoise;
 }
 
 .main-container {
@@ -142,9 +142,9 @@
   justify-content: center;
   align-items: flex-start;
   width: 100%;
-  max-width: 1200px; /* Ensure this is set to your desired maximum width */
+  max-width: 1200px;
   margin: 0 auto;
-  overflow: visible; /* Allow overflow */
+  overflow: visible; 
 }
 
 .graph-content {
@@ -159,7 +159,7 @@
   height: 500px;
   border: 2px solid #000;
   position: relative;
-  flex-shrink: 0; /* Prevent shrinking */
+  flex-shrink: 0;
 }
 
 .graph-node {
@@ -190,7 +190,7 @@
 }
 
 .graph-button:hover {
-  background-color: rgb(180, 171, 171); /* Hover background color */
+  background-color: rgb(180, 171, 171); 
   border: rgb(180, 171, 171);
 }
 
@@ -205,31 +205,31 @@
   display: flex;
   flex-direction: column;
   margin-left: 20px;
-  flex-shrink: 0; /* Prevent shrinking */
+  flex-shrink: 0; 
   height: 100%;
 }
 
 .status-text {
   text-align: center;
-  padding-top: 20px; /* Adjust to be right below the graph container */
+  padding-top: 20px;
 }
 
 .slider-container {
   display: flex;
   align-items: center;
   width: 100%;
-  justify-content: space-between; /* Ensures the text and slider are on the same line */
-  white-space: nowrap; /* Prevents text wrapping */
+  justify-content: space-between; 
+  white-space: nowrap; 
 }
 
 .slider-label {
-  margin-right: auto; /* Align to the left */
+  margin-right: auto;
 }
 
 .slider-content {
   display: flex;
   align-items: center;
-  justify-content: center; /* Center the slider content */
+  justify-content: center; 
 }
 
 .slider {
