@@ -1,16 +1,21 @@
 import React, {useState, useEffect, useRef} from 'react';
 import "../index.css"
 
+// Main component for sorting visualizer
 const Sorting = () => {
 
-    const [bars, setBars] = useState([]);
-    const [numBars, setNumBars] = useState(50);
-    const [isSorting, setIsSorting] = useState(false);
-    const [speed, setSpeed] = useState(50);
+    // State hooks
+    const [bars, setBars] = useState([]); // Bar heights
+    const [numBars, setNumBars] = useState(50); // Number of bars
+    const [isSorting, setIsSorting] = useState(false); // Sorting state
+    const [speed, setSpeed] = useState(50); // Animation speed
+
+    // Refs for persistent values
     const barsRef = useRef([]);
     const speedRef = useRef(speed);
     const isMountedRef = useRef(false);
 
+    // Effect to trac component mount status
     useEffect(() => {
         isMountedRef.current = true;
         return () => {
@@ -18,20 +23,24 @@ const Sorting = () => {
         };
     }, []);
 
+    //Effect to generate bars whenever numBars changes
     useEffect(() => {
         generateBars(numBars);
+        // eslint-disable-next-line
     }, [numBars]);
 
+    //Function to generate new bars
     const generateBars = (numBars) => {
         const newBars = []
         for(let i = 0; i < numBars; i++){
-            newBars.push( (i +1)* (500 / numBars));
+            newBars.push( (i +1)* (500 / numBars)); // Bar height calculation
         }
 
         shuffleBars(newBars);
         setBars(newBars);
     }
 
+    //Function to shuffle bars
     const shuffleBars = (barsArray) => {
         for (let i = barsArray.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -40,16 +49,19 @@ const Sorting = () => {
         setBars([...barsArray]); // Update state with the shuffled array
     }
 
+    // Handler for number of bars input
     const handleNumBars = (event) => {
         setNumBars(event.target.value);
     }
 
+    // Handler for speed input
     const handleSpeed = (event) => {
         const newValue = event.target.value;
         setSpeed(newValue);
         speedRef.current = newValue;
     }
     
+    // Handler to initiate sorting
     const handleSort = (sortMethod) => {
         
         const barsCopy = [...bars];
@@ -60,31 +72,40 @@ const Sorting = () => {
         }
 
         setIsSorting(true);
-        if(sortMethod === "selectionSort"){
-            selectionSort(barsCopy);
-        }else if(sortMethod === "insertionSort"){
-            insertionSort(barsCopy);
-        }else if(sortMethod === "mergeSort"){
-            mergeSort(barsCopy);
-        }else if(sortMethod === "quickSort"){
-            quickSort(barsCopy);
-        }else if(sortMethod === "heapSort"){
-            heapSort(barsCopy);
-        }else{
-            shellSort(barsCopy);
+
+        switch (sortMethod) { // Switch statement that selects the sorting method and runs that function
+            case "selectionSort":
+                selectionSort(barsCopy);
+                break;
+            case "insertionSort":
+                insertionSort(barsCopy);
+                break;
+            case "mergeSort":
+                mergeSort(barsCopy);
+                break;
+            case "quickSort":
+                quickSort(barsCopy);
+                break;
+            case "heapSort":
+                heapSort(barsCopy);
+                break;
+            default:
+                shellSort(barsCopy);
+                break;
         }
     }
 
+    // Function to check if array is sorted
     const isSorted = (barsArray) => {
         for(let i = 1; i < barsArray.length - 1; i++){
             if(barsArray[i] < barsArray[i - 1]){
                 return false;
             }
         }
-
         return true;
     }
 
+    // Function to light up bars after sorting
     const lightUpBlue = async (barsArray) => {
         const barElements = barsRef.current;
         for(let i = 0; i < barsArray.length; i++){
@@ -103,6 +124,10 @@ const Sorting = () => {
 
         setIsSorting(false);
     }
+
+    /*
+        Sorting Algorithms
+    */
 
     const selectionSort = async (barsArray) => {
         for(let i = 0; i < barsArray.length; i++){
@@ -247,15 +272,11 @@ const Sorting = () => {
     const shellSort = async (barsArray) => {
         let n = barsArray.length;
     
-        // Start with a big gap, then reduce the gap
         for (let gap = Math.floor(n / 2); gap > 0; gap = Math.floor(gap / 2)) {
-            // Do a gapped insertion sort for this gap size
             for (let i = gap; i < n; i++) {
                 for (let j = i; j >= gap && barsArray[j] < barsArray[j - gap]; j -= gap) {
-                    // Swap barsArray[j] and barsArray[j - gap]
                     await swap(barsArray, j, j - gap, speedRef.current);
     
-                    // Visualize the swap
                     await new Promise(resolve => setTimeout(resolve, speedRef.current));
                     setBars(barsArray);
                 }
@@ -264,7 +285,8 @@ const Sorting = () => {
     
         lightUpBlue(barsArray);
     }
-    
+
+    // Function to swap two bars
     const swap = async (barsArray, i, j, ms) => {
         const barElements = barsRef.current;
         
@@ -287,11 +309,12 @@ const Sorting = () => {
         }
     }
     
-
+    // Sleep function for animation delay
     const sleep = (ms) => {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
+    // JSX for rendering the component
     return (
         <div className="sorting-main-container">
             <div className="sorting-container">
@@ -344,7 +367,7 @@ const Sorting = () => {
                 <button className="sorting-button" onClick={() => handleSort("shellSort")} disabled={isSorting}>Shell Sort</button>
             </div>
         </div>
-      );
+    );
 }
  
 export default Sorting;
