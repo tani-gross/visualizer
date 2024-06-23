@@ -1089,9 +1089,13 @@ const Graphs = () => {
     return (
         <div className="main-container">
             <div className="graphs-container">
-                <button className="graph-button" onClick={() => {setShowWeights(!showWeights)}}>
-                    {showWeights ? 'Hide Weights' : 'Show Weights'}
-                </button>
+                <div className="button-container">
+                    <h3>Graph Stuff</h3>
+                    <button className="graph-button" onClick={() => {setShowWeights(!showWeights)}}>
+                        {showWeights ? 'Hide Weights' : 'Show Weights'}
+                    </button>
+                </div>
+                    
                 <div className="graph-content">
                     <div className="slider-container">
                         <h4 className="slider-label">Algorithm Step Speed:</h4>
