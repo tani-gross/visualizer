@@ -14,7 +14,7 @@ const BottomBar = () => {
     return (  
         <nav className="navbar-bottom navbar">
             <div onClick={()=> copyToClipboard("jgross5@mail.yu.edu")}className="links contact-me">
-                <Link to="/graphs">Contact Me</Link>
+                <Link>Contact Me</Link>
             </div>
 
             <a href = "https://github.com/tani-gross" target="_blank" rel="noopener noreferrer">
