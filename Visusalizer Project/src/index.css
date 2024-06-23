@@ -167,7 +167,6 @@
   align-items: flex-start;
   width: 100%;
   max-width: 1200px;
-  margin: 0 auto;
   overflow: visible; 
 }
 
@@ -229,8 +228,14 @@
   display: flex;
   flex-direction: column;
   margin-left: 20px;
+  margin-right: 20px;
   flex-shrink: 0; 
   height: 100%;
+}
+
+.button-container h3{
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .status-text {

@@ -1090,8 +1090,8 @@ const Graphs = () => {
         <div className="main-container">
             <div className="graphs-container">
                 <div className="button-container">
-                    <h3>Graph Stuff</h3>
-                    <button className="graph-button" onClick={() => {setShowWeights(!showWeights)}}>
+                    <h3>Edge Editing</h3>
+                    <button className="graph-button" onClick={() => {if(edges.length>0){setShowWeights(!showWeights)}}}>
                         {showWeights ? 'Hide Weights' : 'Show Weights'}
                     </button>
                 </div>
