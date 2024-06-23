@@ -32,6 +32,10 @@
   margin-left: auto;
 }
 
+.navbar-top .links{
+  font-size: 20px;
+}
+
 .navbar-bottom .contact-me {
   margin-top: -5px;
 }
