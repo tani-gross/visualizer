@@ -928,6 +928,38 @@ const Graphs = () => {
         setSliderValue(newValue);
         sliderValueRef.current = newValue;
     }
+
+    //Function to color graph
+    const graphColoring = async () => {
+        if(algorithmRunning || isRemovingEdge){
+            return;
+        }
+
+        setAlgorithmRunning(true);
+        setText("Graph Coloring in progress...");
+
+        const availableColors = componentColors;
+        const colors = {};
+
+        const colorGraph = (node) => {
+            const neighborColors = adjList[node.id].map(neighborId => colors[neighborId]);
+            for(let color of availableColors){
+                if(!neighborColors.includes(color)){
+                    colors[node.id] = color;
+                    break;
+                }
+            }
+        }
+
+        for(let node of nodes){
+            colorGraph(node);
+            setVisitedNodes(prev => [...prev, {id: node.id, color: colors[node.id]}]);
+            await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
+        }
+
+        setText("Graph Coloring Done!");
+        setTimeout(resetEdges, 1000);
+    }
     
     // JSX for rendering the component
     return (
@@ -1031,6 +1063,9 @@ const Graphs = () => {
                     <button className="graph-button" onClick={startShortestPath}>Shortest Path</button>)}
                     {!clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
                     <button className="graph-button" onClick={findConnectedComponents}>Connected Components</button>)}
+                    {!clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
+                    <button className="graph-button" onClick={graphColoring}>Graph Coloring</button>)}
+                    
                     
 
                     {/* Back Button */}
