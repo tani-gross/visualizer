@@ -42,6 +42,10 @@ const Sorting = () => {
 
     //Function to shuffle bars
     const shuffleBars = (barsArray) => {
+        if(isSorting){
+            return;
+        }
+        
         for (let i = barsArray.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [barsArray[i], barsArray[j]] = [barsArray[j], barsArray[i]];
