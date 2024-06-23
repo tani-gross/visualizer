@@ -70,11 +70,11 @@
 
 .sorting-main-container {
   display: flex;
-  flex-direction: row ;
+  flex-direction: row;
   align-items: center;
+  justify-content: center;
   width: 100%;
-  overflow: visible;
-  position:relative;
+  margin-left: 700px;
   padding-top: 24px;
 }
 
