@@ -14,6 +14,7 @@ const Sorting = () => {
     const barsRef = useRef([]);
     const speedRef = useRef(speed);
     const isMountedRef = useRef(false);
+    
 
     // Effect to trac component mount status
     useEffect(() => {

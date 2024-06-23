@@ -50,6 +50,11 @@
   color: #f1356d;
 }
 
+.navbar a.active{
+  color:#f1356d;
+  font-weight:bold;
+}
+
 .logo-image {
   width: 20px;
   background-size: 10px;
