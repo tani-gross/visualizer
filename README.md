@@ -36,5 +36,6 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Screenshots
 
-![Graph Screenshot]("Visusalizer Project/public/README pics/Graph Screenshot.png")
-![Sorting Screenshot]("Visusalizer Project/public/README pics/Sorting Screenshot.png")
+![alt text](<Graph Screenshot.png>)
+
+![alt text](<Sorting Screenshot.png>)
