@@ -322,6 +322,8 @@ const Sorting = () => {
     // JSX for rendering the component
     return (
         <div className="sorting-main-container">
+            <div className="sorting-button-container">
+            </div>
             <div className="sorting-container">
                 <div className="bars-container">
                     {bars.map((bar, index) => (

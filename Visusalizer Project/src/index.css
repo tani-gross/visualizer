@@ -70,10 +70,9 @@
 
 .sorting-main-container {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   position: relative;
-  width: 100%;
   padding-top: 24px;
 }
 
@@ -87,8 +86,12 @@
 .sorting-button-container {
   display:flex;
   flex-direction: column;
+  margin: 0 20px;
   align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  height: 100%;
+  width: 200px;
 }
 
 .sorting-button {
@@ -165,6 +168,22 @@
   flex-shrink: 0;
 }
 
+.button-container {
+  display: flex;
+  flex-direction: column;
+  margin: 0 20px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; 
+  height: 100%;
+  width: 200px;
+}
+
+.button-container h3{
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .graph-box {
   width: 500px;
   height: 500px;
@@ -212,21 +231,7 @@
   pointer-events: none;
 }
 
-.button-container {
-  display: flex;
-  flex-direction: column;
-  margin: 0 20px;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0; 
-  height: 100%;
-  width: 200px;
-}
 
-.button-container h3{
-  margin-left: auto;
-  margin-right: auto;
-}
 
 .status-text {
   text-align: center;
