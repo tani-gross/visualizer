@@ -41,8 +41,10 @@ const Graphs = () => {
     const isStepModeRef = useRef(isStepMode);
     const [disablePause, setDisablePause] = useState(false);
     const [algorithmStarted, setAlgorithmStarted]=  useState(false);
+    const [runningAlgorithm, setRunningAlgorithm] = useState(null);
 
     // Constants for UI text and colors
+    const highlightedButtonColor = "lightblue";
     const startingText = "Move Node, Select Node, or Press Button to Continue";
     const treeEdgeColor = "blue"; 
     const currentEdgeColor = "red"; 
@@ -72,6 +74,7 @@ const Graphs = () => {
         setCurrentStep(0);
         currentStepRef.current = 0;
         setDisablePause(false);
+        setRunningAlgorithm(null);
     };
 
     // Function to calculate edge length
@@ -421,6 +424,7 @@ const Graphs = () => {
         if(algorithmRunning|| isRemovingEdge){
             return;
         }
+        setRunningAlgorithm("DFS");
         setIsDFS(true);
         setAlgorithmRunning(true);
         setText("Select Node to begin DFS");
@@ -505,6 +509,7 @@ const Graphs = () => {
         if(algorithmRunning || isRemovingEdge){
             return;
         }
+        setRunningAlgorithm("BFS");
         setIsBFS(true);
         setAlgorithmRunning(true);
         setText("Select Node to begin BFS");
@@ -586,6 +591,7 @@ const Graphs = () => {
         if (algorithmRunning || isRemovingEdge) {
             return;
         }
+        setRunningAlgorithm("Kruskall");
         setDisablePause(true);
         setAlgorithmRunning(true);
         setText("Algorithm in Progress");
@@ -712,6 +718,7 @@ const Graphs = () => {
         if(algorithmRunning || isRemovingEdge){
             return;
         }
+        setRunningAlgorithm("Prim");
         setIsPrim(true);
         setAlgorithmRunning(true);
         setText("Select Node to begin Prim's Algorithm");
@@ -848,6 +855,7 @@ const Graphs = () => {
 
     // Function to find connected components in a graph
     const findConnectedComponents = async () => {
+        setRunningAlgorithm("Connected");
         setAlgorithmStarted(true);
         setText("Algorithm in Progress");
         setAlgorithmRunning(true);
@@ -935,6 +943,7 @@ const Graphs = () => {
         if(algorithmRunning || isRemovingEdge){
             return;
         }
+        setRunningAlgorithm("SP");
 
         setIsShortestPath(true);
         setAlgorithmRunning(true);
@@ -1092,7 +1101,7 @@ const Graphs = () => {
         if(algorithmRunning || isRemovingEdge){
             return;
         }
-        
+        setRunningAlgorithm("Color");
         setDisablePause(true);
         setAlgorithmRunning(true);
         setText("Algorithm in Progress");
@@ -1125,7 +1134,7 @@ const Graphs = () => {
         if(algorithmRunning || isRemovingEdge){
             return;
         }
-
+        setRunningAlgorithm("TSP");
         setIsTSP(true);
         setAlgorithmRunning(true);
         setText("Select Node to begin TSP");
@@ -1405,24 +1414,24 @@ const Graphs = () => {
 
                 {/* Specific Algorithms */}
                 {clickedMST && !selectedNode && edges.length > 0 && (
-                <button className="graph-button" onClick={animateKruskalsAlgorithm}>Kruskall</button>)}
+                <button style={{ backgroundColor: runningAlgorithm === "Kruskall" ? highlightedButtonColor : "" }}className="graph-button" onClick={animateKruskalsAlgorithm}>Kruskall</button>)}
                 {clickedMST && !selectedNode && edges.length > 0 && (
-                <button className="graph-button" onClick={startPrim}>Prim</button>)}
+                <button style={{ backgroundColor: runningAlgorithm === "Prim" ? highlightedButtonColor : "" }}className="graph-button" onClick={startPrim}>Prim</button>)}
 
                 {clickedTraversal && !selectedNode && edges.length > 0 && (
-                <button className="graph-button" onClick={startDFS}>DFS</button>)}
+                <button style={{ backgroundColor: runningAlgorithm === "DFS" ? highlightedButtonColor : "" }}className="graph-button" onClick={startDFS}>DFS</button>)}
                 {clickedTraversal && !selectedNode && edges.length > 0 && (
-                <button className="graph-button" onClick={startBFS}>BFS</button>)}
+                <button style={{ backgroundColor: runningAlgorithm === "BFS" ? highlightedButtonColor : "" }}className="graph-button" onClick={startBFS}>BFS</button>)}
 
                 {clickedPaths && !selectedNode && edges.length > 0 && (
-                <button className="graph-button" onClick={startShortestPath}>Shortest Path</button>)}
+                <button style={{ backgroundColor: runningAlgorithm === "SP" ? highlightedButtonColor : "" }}className="graph-button" onClick={startShortestPath}>Shortest Path</button>)}
                 {clickedPaths && !selectedNode && edges.length > 0 && (
-                <button className="graph-button" onClick={startTSP}>TSP</button>)}
+                <button style={{ backgroundColor: runningAlgorithm === "TSP" ? highlightedButtonColor : "" }}className="graph-button" onClick={startTSP}>TSP</button>)}
                 
                 {!clickedPaths && !clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
-                <button className="graph-button" onClick={findConnectedComponents}>Connected Components</button>)}
+                <button style={{ backgroundColor: runningAlgorithm === "Connected" ? highlightedButtonColor : "" }}className="graph-button" onClick={findConnectedComponents}>Connected Components</button>)}
                 {!clickedPaths && !clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
-                <button className="graph-button" onClick={graphColoring}>Graph Coloring</button>)}
+                <button style={{ backgroundColor: runningAlgorithm === "Color" ? highlightedButtonColor : "" }}className="graph-button" onClick={graphColoring}>Graph Coloring</button>)}
                 
                 
 
