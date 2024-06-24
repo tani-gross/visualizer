@@ -427,7 +427,6 @@ const Graphs = () => {
                 setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
                
                 if(!visitedEdgeSet.has(edge)){
-                    console.log(calculateEdgeLength(edge));
                     await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
                 }
             
@@ -466,6 +465,7 @@ const Graphs = () => {
     const bfs = async (startNode) => {
         setText("BFS in progress...");
         const visitedNodeSet = new Set();
+        const visitedEdgeSet = new Set();
     
         const queue = [startNode];
         visitedNodeSet.add(startNode.id);
@@ -473,7 +473,8 @@ const Graphs = () => {
     
         while (queue.length > 0) {
             const currentNode = queue.shift();
-    
+            setCurrentNode(currentNode);
+            
             for (let neighborId of adjList[currentNode.id]) {
                 const neighborNode = nodes.find(node => node.id === neighborId);
                 const edge = edges.find(e => 
@@ -481,36 +482,32 @@ const Graphs = () => {
                     (e.from.id === neighborId && e.to.id === currentNode.id)
                 );
     
-                if (edge) {
-                    const isEdgeNotBlue = edge.color !== treeEdgeColor;
-    
-                    if (isEdgeNotBlue) {
-                        setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
-    
-                        await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
-                    }
-    
-                    if (!visitedNodeSet.has(neighborId)) {
-                        visitedNodeSet.add(neighborId);
-                        queue.push(neighborNode);
-    
-                        setVisitedEdges(prev => [
-                            ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
-                            { ...edge, color: treeEdgeColor }
-                        ]);
-                        setVisitedNodes(prev => [...prev, { id: neighborId, color: treeEdgeColor }]);
-                    } else if (isEdgeNotBlue) {
-                        setVisitedEdges(prev => [
-                            ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id && e.color !== treeEdgeColor)),
-                            { ...edge, color: defaultEdgeColor }
-                        ]);
-                    }
+                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
+
+                if(!visitedEdgeSet.has(edge)){
+                    await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
                 }
+
+                if (!visitedNodeSet.has(neighborId)) {
+                    visitedNodeSet.add(neighborId);
+                    queue.push(neighborNode);
+
+                    setVisitedEdges(prev => [
+                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
+                        { ...edge, color: treeEdgeColor }
+                    ]);
+                    setVisitedNodes(prev => [...prev, { id: neighborId, color: treeEdgeColor }]);
+
+                } else{
+                    setVisitedEdges(prev => prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id && e.color !== treeEdgeColor)));
+                }
+                
             }
         }
     
+        setCurrentNode(null);
         setText("BFS Done!");
-        setTimeout(resetEdges, 1000); // Wait 1 second before resetting edges
+        setTimeout(resetEdges, 1000); 
     };
     
     // Function to animate Kruskall's algorithm
