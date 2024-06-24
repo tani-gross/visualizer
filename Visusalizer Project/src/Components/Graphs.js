@@ -1225,16 +1225,18 @@ const Graphs = () => {
 
     // Function to step in the algorithm
     const nextStep = () => {
-        setIsStepMode(true);
         if(isPausedRef.current){
-            setCurrentStep(prev => {
-                const next = prev + 1;
-                currentStepRef.current = next;
-                return next;
-            });
+            setIsStepMode(true);
+            if(isPausedRef.current){
+                setCurrentStep(prev => {
+                    const next = prev + 1;
+                    currentStepRef.current = next;
+                    return next;
+                });
+            }
+            setIsPaused(false);
+            isPausedRef.current = false;
         }
-        setIsPaused(false);
-        isPausedRef.current = false;
     };
 
     // Function to toggle button 
