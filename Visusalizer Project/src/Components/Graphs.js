@@ -1,4 +1,4 @@
-import React, {useState, useRef } from 'react';
+import React, {useState, useRef, useEffect } from 'react';
 import Draggable from 'react-draggable';
 
 const Graphs = () => {
@@ -32,6 +32,14 @@ const Graphs = () => {
     const [sliderValue, setSliderValue] = useState(250);
     const [currentNode, setCurrentNode] = useState(null);
     const sliderValueRef = useRef(sliderValue);
+    const totalSliderCount = 2100;
+    const [isPaused, setIsPaused] = useState(false);
+    const isPausedRef = useRef(isPaused);
+    const [currentStep, setCurrentStep] = useState(0);
+    const currentStepRef = useRef(currentStep);
+    const [isStepMode, setIsStepMode] = useState(false);
+    const isStepModeRef = useRef(isStepMode);
+    const [disablePause, setDisablePause] = useState(false);
 
     // Constants for UI text and colors
     const startingText = "Move Node, Select Node, or Press Button to Continue";
@@ -39,12 +47,30 @@ const Graphs = () => {
     const currentEdgeColor = "red"; 
     const defaultEdgeColor = "grey";
 
+    // Use Effect to differentiate between modes
+    useEffect(() => {
+        isStepModeRef.current = isStepMode;
+    }, [isStepMode]);
+
+    // Use Effect to allow pausing mid-alg
+    useEffect(() => {
+        isPausedRef.current = isPaused;
+    }, [isPaused]);
+
+    // Use Effect to allow stopping mid-alg
+    useEffect(() => {
+        currentStepRef.current = currentStepRef;
+    }, [currentStepRef]);
+
     // Function to reset edges to default state
     const resetEdges = () => {
         setVisitedEdges([]);
         setVisitedNodes([]);
         setText(startingText);
         setAlgorithmRunning(false);
+        setCurrentStep(0);
+        currentStepRef.current = 0;
+        setDisablePause(false);
     };
 
     // Function to calculate edge length
@@ -402,8 +428,10 @@ const Graphs = () => {
     // DFS implementatoin
     const dfs = async (startNode) => {
         setText("DFS in progress...");
+
         const visitedNodeSet = new Set();
         const visitedEdgeSet = new Set();
+        let stepIndex = 0;
     
         const dfsRecursive = async (currentNode) => {
             if (visitedNodeSet.has(currentNode.id)) {
@@ -426,8 +454,26 @@ const Graphs = () => {
 
                 setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
                
-                if(!visitedEdgeSet.has(edge)){
-                    await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
+                if (!visitedEdgeSet.has(edge)) {
+                    stepIndex++;
+                    if (isPausedRef.current) {
+                        await new Promise(resolve => {
+                            const checkStep = () => {
+                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                    resolve();
+                                } else {
+                                    setTimeout(checkStep, 50);
+                                }
+                            };
+                            checkStep();
+                        });
+                        if(isStepModeRef.current){
+                            setIsPaused(true);
+                            isPausedRef.current = true;
+                        }
+                    } else {
+                        await sleep(totalSliderCount - sliderValueRef.current);
+                    }
                 }
             
                 if (!visitedNodeSet.has(neighborId)) { 
@@ -466,6 +512,8 @@ const Graphs = () => {
         setText("BFS in progress...");
         const visitedNodeSet = new Set();
         const visitedEdgeSet = new Set();
+        let stepIndex = 0;
+
     
         const queue = [startNode];
         visitedNodeSet.add(startNode.id);
@@ -485,7 +533,25 @@ const Graphs = () => {
                 setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
 
                 if(!visitedEdgeSet.has(edge)){
-                    await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
+                    stepIndex++;
+                    if (isPausedRef.current) {
+                        await new Promise(resolve => {
+                            const checkStep = () => {
+                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                    resolve();
+                                } else {
+                                    setTimeout(checkStep, 50);
+                                }
+                            };
+                            checkStep();
+                        });
+                        if(isStepModeRef.current){
+                            setIsPaused(true);
+                            isPausedRef.current = true;
+                        }
+                    } else {
+                        await sleep(totalSliderCount - sliderValueRef.current);
+                    }
                 }
 
                 if (!visitedNodeSet.has(neighborId)) {
@@ -515,7 +581,7 @@ const Graphs = () => {
         if (algorithmRunning || isRemovingEdge) {
             return;
         }
-    
+        setDisablePause(true);
         setAlgorithmRunning(true);
         setText("Running Kruskal's Algorithm...");
     
@@ -564,7 +630,7 @@ const Graphs = () => {
                     const { from, to } = currentComponentEdges[index];
                     setVisitedNodes(prev => [...prev, { id: from.id, color }, { id: to.id, color }]);
                     setVisitedEdges(prev => [...prev, currentComponentEdges[index]]);
-                    setTimeout(() => highlightNodesAndEdges(index + 1), sliderValueRef.current); 
+                    setTimeout(() => highlightNodesAndEdges(index + 1), totalSliderCount - sliderValueRef.current); 
                 } else {
                     componentIndex++;
                     if (componentIndex < foundComponents.length) {
@@ -651,6 +717,7 @@ const Graphs = () => {
         setText("Running Prim's Algorithm...");
         const visitedNodeSet = new Set();
         const edgeQueue = [];
+        let stepIndex = 0;
     
         const addEdges = (node) => {
             visitedNodeSet.add(node.id);
@@ -681,7 +748,25 @@ const Graphs = () => {
                 setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
             });
     
-            await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
+            stepIndex++;
+            if (isPausedRef.current) {
+                await new Promise(resolve => {
+                    const checkStep = () => {
+                        if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                            resolve();
+                        } else {
+                            setTimeout(checkStep, 50);
+                        }
+                    };
+                    checkStep();
+                });
+                if(isStepModeRef.current){
+                    setIsPaused(true);
+                    isPausedRef.current = true;
+                }
+            } else {
+                await sleep(totalSliderCount - sliderValueRef.current);
+            }
     
             const edge = edgeQueue.shift();
             const { from, to } = edge;
@@ -757,9 +842,11 @@ const Graphs = () => {
     // Function to find connected components in a graph
     const findConnectedComponents = async () => {
         setText("Finding connected components...");
+        setAlgorithmRunning(true);
         const visitedNodeSet = new Set();
         const visitedEdgeSet = new Set();
         let componentIndex = 0;
+        let stepIndex = 0;
     
         const dfsRecursive = async (currentNode, componentColor) => {
             if (visitedNodeSet.has(currentNode.id)) {
@@ -783,7 +870,25 @@ const Graphs = () => {
                 setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
     
                 if (!visitedEdgeSet.has(edge)) {
-                    await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
+                    stepIndex++;
+                    if (isPausedRef.current) {
+                        await new Promise(resolve => {
+                            const checkStep = () => {
+                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                    resolve();
+                                } else {
+                                    setTimeout(checkStep, 50);
+                                }
+                            };
+                            checkStep();
+                        });
+                        if(isStepModeRef.current){
+                            setIsPaused(true);
+                            isPausedRef.current = true;
+                        }
+                    } else {
+                        await sleep(totalSliderCount - sliderValueRef.current);
+                    }
                 }
     
                 if (!visitedNodeSet.has(neighborId)) { 
@@ -816,7 +921,6 @@ const Graphs = () => {
         setTimeout(resetEdges, 1000); 
     };
     
-    
     // Function to start shortest path algorithm
     const startShortestPath = () => {
         if(algorithmRunning || isRemovingEdge){
@@ -836,6 +940,7 @@ const Graphs = () => {
         const visitedEdgeSet = new Set();
         const visitedNodeSet = new Set();
         const priorityQueue = new Set(nodes.map(node => node.id)); 
+        let stepIndex = 0;
     
         nodes.forEach(node => {
             dist[node.id] = Infinity;
@@ -876,7 +981,25 @@ const Graphs = () => {
                 setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
     
                 if (!visitedEdgeSet.has(edge)) {
-                    await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
+                    stepIndex++;
+                    if (isPausedRef.current) {
+                        await new Promise(resolve => {
+                            const checkStep = () => {
+                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                    resolve();
+                                } else {
+                                    setTimeout(checkStep, 50);
+                                }
+                            };
+                            checkStep();
+                        });
+                        if(isStepModeRef.current){
+                            setIsPaused(true);
+                            isPausedRef.current = true;
+                        }
+                    } else {
+                        await sleep(totalSliderCount - sliderValueRef.current);
+                    }
                     visitedEdgeSet.add(edge);
                 }
     
@@ -916,7 +1039,7 @@ const Graphs = () => {
             path.unshift(currentNodeId);
             currentNodeId = prev[currentNodeId];
         }
-        console.log(path);
+
         if(path.length === 1){
             setText("No path Found!");
             setTimeout(resetEdges, 1000);
@@ -958,7 +1081,8 @@ const Graphs = () => {
         if(algorithmRunning || isRemovingEdge){
             return;
         }
-
+        
+        setDisablePause(true);
         setAlgorithmRunning(true);
         setText("Graph Coloring in progress...");
 
@@ -978,7 +1102,7 @@ const Graphs = () => {
         for(let node of nodes){
             colorGraph(node);
             setVisitedNodes(prev => [...prev, {id: node.id, color: colors[node.id]}]);
-            await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
+            await new Promise(resolve => setTimeout(resolve, totalSliderCount - sliderValueRef.current));
         }
 
         setText("Graph Coloring Done!");
@@ -1004,6 +1128,7 @@ const Graphs = () => {
         const visited = [];
         const stack = [];
         let currentNode = startNode;
+        let stepIndex = 0;
     
         unvisited.delete(currentNode.id);
         visited.push(currentNode);
@@ -1025,7 +1150,25 @@ const Graphs = () => {
     
                 if (edge) {
                     setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
-                    await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
+                    stepIndex++;
+                    if (isPausedRef.current) {
+                        await new Promise(resolve => {
+                            const checkStep = () => {
+                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                    resolve();
+                                } else {
+                                    setTimeout(checkStep, 50);
+                                }
+                            };
+                            checkStep();
+                        });
+                        if(isStepModeRef.current){
+                            setIsPaused(true);
+                            isPausedRef.current = true;
+                        }
+                    } else {
+                        await sleep(totalSliderCount - sliderValueRef.current);
+                    }
                     const distance = calculateEdgeLength({ from: currentNode, to: neighborNode });
                     setVisitedEdges(prev => prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)));
                     if (distance < shortestDistance) {
@@ -1042,7 +1185,25 @@ const Graphs = () => {
                 setVisitedEdges(prev => [...prev, { ...currentEdge, color: treeEdgeColor }]);
                 setVisitedNodes(prev => [...prev, { id: nearestNode.id, color: treeEdgeColor }]);
     
-                await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
+                stepIndex++;
+                if (isPausedRef.current) {
+                    await new Promise(resolve => {
+                        const checkStep = () => {
+                            if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                resolve();
+                            } else {
+                                setTimeout(checkStep, 50);
+                            }
+                        };
+                        checkStep();
+                    });
+                    if(isStepModeRef.current){
+                        setIsPaused(true);
+                        isPausedRef.current = true;
+                    }
+                } else {
+                    await sleep(totalSliderCount - sliderValueRef.current);
+                }
     
                 currentNode = nearestNode;
                 unvisited.delete(currentNode.id);
@@ -1061,7 +1222,39 @@ const Graphs = () => {
         setText("TSP Solved!");
         setTimeout(resetEdges, 1000);
     };
-    
+
+    // Function to step in the algorithm
+    const nextStep = () => {
+        setIsStepMode(true);
+        if(isPausedRef.current){
+            setCurrentStep(prev => {
+                const next = prev + 1;
+                currentStepRef.current = next;
+                return next;
+            });
+        }
+        setIsPaused(false);
+        isPausedRef.current = false;
+    };
+
+    // Function to toggle button 
+    const togglePlayPause = () => {
+        if (isPausedRef.current) {
+            setIsStepMode(false);
+            setIsPaused(false);
+            isPausedRef.current = false;
+        } else {
+            setIsStepMode(false);
+            setIsPaused(true);
+            isPausedRef.current = true;
+        }
+    };
+
+    // Function to sleep 
+    const sleep = (ms) => {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    };
+
     // JSX for rendering the component
     return (
         <div className="main-container">
@@ -1094,9 +1287,17 @@ const Graphs = () => {
                 
             <div className="graph-content">
                 <div className="slider-container">
-                    <h4 className="slider-label">Algorithm Step Speed:</h4>
+                    {algorithmRunning && !disablePause && (
+                        <>
+                            <button className="" onClick={nextStep}>Next Step</button>
+                            <button className="" onClick={togglePlayPause}>
+                                {((isPaused || isStepMode) && !disablePause) ? "Play" : "Pause"}
+                            </button>
+                        </>
+                    )}
+                    <h4></h4>
                     <div className="slider-content">
-                        <h4>100ms</h4>
+                        <h4>Slow</h4>
                         <input 
                             type="range" 
                             min="100" 
@@ -1105,7 +1306,7 @@ const Graphs = () => {
                             value={sliderValue} 
                             onChange={handleSliderChange}
                         />
-                        <h4>2000ms</h4>
+                        <h4>Fast</h4>
                     </div>
                 </div>
                 <div className="graph-box">
