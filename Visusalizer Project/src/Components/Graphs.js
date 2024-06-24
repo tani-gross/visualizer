@@ -40,6 +40,7 @@ const Graphs = () => {
     const [isStepMode, setIsStepMode] = useState(false);
     const isStepModeRef = useRef(isStepMode);
     const [disablePause, setDisablePause] = useState(false);
+    const [algorithmStarted, setAlgorithmStarted]=  useState(false);
 
     // Constants for UI text and colors
     const startingText = "Move Node, Select Node, or Press Button to Continue";
@@ -427,7 +428,8 @@ const Graphs = () => {
 
     // DFS implementatoin
     const dfs = async (startNode) => {
-        setText("DFS in progress...");
+        setAlgorithmStarted(true);
+        setText("Algorithm in Progress");
 
         const visitedNodeSet = new Set();
         const visitedEdgeSet = new Set();
@@ -493,7 +495,8 @@ const Graphs = () => {
     
         await dfsRecursive(startNode);
         setCurrentNode(null);
-        setText("DFS Done!");
+        setAlgorithmStarted(false);
+        setText("Algorithm Done!");
         setTimeout(resetEdges, 1000); 
     };
 
@@ -509,7 +512,8 @@ const Graphs = () => {
 
     // BFS implementation
     const bfs = async (startNode) => {
-        setText("BFS in progress...");
+        setAlgorithmStarted(true);
+        setText("Algorithm in Progress");
         const visitedNodeSet = new Set();
         const visitedEdgeSet = new Set();
         let stepIndex = 0;
@@ -572,7 +576,8 @@ const Graphs = () => {
         }
     
         setCurrentNode(null);
-        setText("BFS Done!");
+        setAlgorithmStarted(false);
+        setText("Algorithm Done!");
         setTimeout(resetEdges, 1000); 
     };
     
@@ -583,7 +588,7 @@ const Graphs = () => {
         }
         setDisablePause(true);
         setAlgorithmRunning(true);
-        setText("Running Kruskal's Algorithm...");
+        setText("Algorithm in Progress");
     
         const sortedEdges = [...edges].sort((a, b) => calculateEdgeLength(a) - calculateEdgeLength(b));
         let componentIndex = 0;
@@ -637,7 +642,7 @@ const Graphs = () => {
                         setTimeout(() => animateComponentMST(foundComponents[componentIndex]), 0); 
                     } else {
                         setTimeout(resetEdges, 1000);
-                        setText("Kruskal's Algorithm completed!");
+                        setText("Algorithm Done!");
                     }
                 }
             };
@@ -714,7 +719,8 @@ const Graphs = () => {
 
     // Function to animate Prim's algorithm
     const animatePrimsAlgorithm = async (startNode) => {
-        setText("Running Prim's Algorithm...");
+        setAlgorithmStarted(true);
+        setText("Algorithm in Progress");
         const visitedNodeSet = new Set();
         const edgeQueue = [];
         let stepIndex = 0;
@@ -738,7 +744,8 @@ const Graphs = () => {
     
         const animateStep = async () => {
             if (visitedNodeSet.size === nodes.length || edgeQueue.length === 0) {
-                setText("Prim's Algorithm completed!");
+                setAlgorithmStarted(false);
+                setText("Algorithm Done!");
                 setTimeout(resetEdges, 1000);
                 return;
             }
@@ -841,7 +848,8 @@ const Graphs = () => {
 
     // Function to find connected components in a graph
     const findConnectedComponents = async () => {
-        setText("Finding connected components...");
+        setAlgorithmStarted(true);
+        setText("Algorithm in Progress");
         setAlgorithmRunning(true);
         const visitedNodeSet = new Set();
         const visitedEdgeSet = new Set();
@@ -917,7 +925,8 @@ const Graphs = () => {
         }
     
         setCurrentNode(null);
-        setText("Connected Components Found!");
+        setAlgorithmStarted(false);
+        setText("Algorithm Done!");
         setTimeout(resetEdges, 1000); 
     };
     
@@ -934,7 +943,8 @@ const Graphs = () => {
 
     // Function to find the shortest path between two nodes
     const findShortestPath = async (startNode, targetNode) => {
-        setText("Dijkstra's Algorithm in progress...");
+        setAlgorithmStarted(true);
+        setText("Algorithm in Progress");
         const dist = {};
         const prev = {};
         const visitedEdgeSet = new Set();
@@ -1029,8 +1039,9 @@ const Graphs = () => {
     
         setStartNode(null);
         setEndNode(null);
+        setAlgorithmStarted(false);
         setCurrentNode(null);
-        setText("Shortest Path Found!");
+        setText("Algorithm Done!");
     
         const path = [];
 
@@ -1084,7 +1095,7 @@ const Graphs = () => {
         
         setDisablePause(true);
         setAlgorithmRunning(true);
-        setText("Graph Coloring in progress...");
+        setText("Algorithm in Progress");
 
         const availableColors = componentColors;
         const colors = {};
@@ -1105,7 +1116,7 @@ const Graphs = () => {
             await new Promise(resolve => setTimeout(resolve, totalSliderCount - sliderValueRef.current));
         }
 
-        setText("Graph Coloring Done!");
+        setText("Algorithm Done!");
         setTimeout(resetEdges, 1000);
     }
 
@@ -1122,7 +1133,8 @@ const Graphs = () => {
 
     // Function to animate TSP
     const tsp = async (node) => {
-        setText("Solving TSP using nearest neighbor...");
+        setAlgorithmStarted(true);
+        setText("Algorithm in Progress");
         const startNode = node;
         const unvisited = new Set(nodes.map(node => node.id));
         const visited = [];
@@ -1219,7 +1231,8 @@ const Graphs = () => {
         }
     
         setCurrentNode(null);
-        setText("TSP Solved!");
+        setAlgorithmStarted(false);
+        setText("Algorithm Done!");
         setTimeout(resetEdges, 1000);
     };
 
@@ -1245,10 +1258,12 @@ const Graphs = () => {
             setIsStepMode(false);
             setIsPaused(false);
             isPausedRef.current = false;
+            setText("Algorithm in Progress");
         } else {
             setIsStepMode(false);
             setIsPaused(true);
             isPausedRef.current = true;
+            setText("Algorithm is Paused");
         }
     };
 
@@ -1287,15 +1302,15 @@ const Graphs = () => {
                 <button className="graph-button" onClick={startRemovingEdge}>Remove Edge</button>)}
 
                 
-                {algorithmRunning && !disablePause && (
-                        <>
-                            <h3>Control</h3>
-                            <button className="graph-button" onClick={nextStep}>Next Step</button>
-                            <button className="graph-button" onClick={togglePlayPause}>
-                                {((isPaused || isStepMode) && !disablePause) ? "Play" : "Pause"}
-                            </button>
-                        </>
-                    )}
+                {algorithmStarted && !disablePause && (
+                    <>
+                        <h3>Control</h3>
+                        <button className="graph-button" onClick={nextStep}>Next Step</button>
+                        <button className="graph-button" onClick={togglePlayPause}>
+                            {((isPaused || isStepMode) && !disablePause) ? "Play" : "Pause"}
+                        </button>
+                    </>
+                )}
 
             </div>
                 
