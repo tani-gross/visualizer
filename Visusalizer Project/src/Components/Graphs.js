@@ -986,7 +986,6 @@ const Graphs = () => {
         setTimeout(resetEdges, 1000);
     };
     
-    
     // Function to handle slider change
     const handleSliderChange = (event) => {
         const newValue = event.target.value;
@@ -1056,6 +1055,7 @@ const Graphs = () => {
             let currentEdge = null;
     
             for (let neighborId of unvisited) {
+                setCurrentNode(currentNode);
                 const neighborNode = nodes.find(node => node.id === neighborId);
                 // eslint-disable-next-line
                 const edge = edges.find(e =>
@@ -1097,7 +1097,7 @@ const Graphs = () => {
             }
         }
     
-    
+        setCurrentNode(null);
         setText("TSP Solved!");
         setTimeout(resetEdges, 1000);
     };
