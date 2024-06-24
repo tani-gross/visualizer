@@ -30,6 +30,7 @@ const Graphs = () => {
     const [components, setComponents] = useState([]);
     const [showWeights, setShowWeights] = useState(false);
     const [sliderValue, setSliderValue] = useState(250);
+    const [currentNode, setCurrentNode] = useState(null);
     const sliderValueRef = useRef(sliderValue);
 
     // Constants for UI text and colors
@@ -196,7 +197,7 @@ const Graphs = () => {
                     (edge.from.id === to.id && edge.to.id === from.id)
                 );
                 if (!edgeExists) {
-                    const newEdge = { from, to };
+                    const newEdge = { from, to, color: defaultEdgeColor };
                     newEdges.push(newEdge);
                     newAdjList[from.id].push(to.id);
                     newAdjList[to.id].push(from.id);
@@ -254,7 +255,7 @@ const Graphs = () => {
                 );
 
                 if(!edgeExists){
-                    const newEdge = { from: selectedNode, to: node };
+                    const newEdge = { from: selectedNode, to: node, color: defaultEdgeColor };
                     setEdges(prevEdges => [...prevEdges, newEdge]);
 
                     setAdjList(prevAdjList => {
@@ -402,6 +403,7 @@ const Graphs = () => {
     const dfs = async (startNode) => {
         setText("DFS in progress...");
         const visitedNodeSet = new Set();
+        const visitedEdgeSet = new Set();
     
         const dfsRecursive = async (currentNode) => {
             if (visitedNodeSet.has(currentNode.id)) {
@@ -409,45 +411,43 @@ const Graphs = () => {
             }
     
             visitedNodeSet.add(currentNode.id);
-            setVisitedNodes(prev => {
+            setVisitedNodes(prev => { 
                 const updatedNodes = [...prev, { id: currentNode.id, color: treeEdgeColor }];
                 return updatedNodes;
             });
     
             for (let neighborId of adjList[currentNode.id]) {
-                const neighborNode = nodes.find(node => node.id === neighborId);
-                const edge = edges.find(e => 
+                setCurrentNode(currentNode);     
+                const neighborNode = nodes.find(node => node.id === neighborId); 
+                const edge = edges.find(e =>                                     
                     (e.from.id === currentNode.id && e.to.id === neighborId) ||
                     (e.from.id === neighborId && e.to.id === currentNode.id)
                 );
-    
-                if (edge) {
-                    const isEdgeNotBlue = edge.color !== treeEdgeColor;
 
-                    if (isEdgeNotBlue) {
-                        setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
+                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
+               
+                if(!visitedEdgeSet.has(edge)){
+                    console.log(calculateEdgeLength(edge));
+                    await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
+                }
+            
+                if (!visitedNodeSet.has(neighborId)) { 
+                    setVisitedEdges(prev => [
+                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
+                        { ...edge, color: treeEdgeColor }
+                    ]);
+                    visitedEdgeSet.add(edge);
 
-                        await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
-                    }
-        
-                    if (!visitedNodeSet.has(neighborId)) {
-                        setVisitedEdges(prev => [
-                            ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
-                            { ...edge, color: treeEdgeColor }
-                        ]);
-                        await dfsRecursive(neighborNode);
-                    } else {
-                        setVisitedEdges(prev => [
-                            ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id && e.color !== treeEdgeColor)),
-                            { ...edge, color: defaultEdgeColor }
-                        ]);
-                    }
+                    await dfsRecursive(neighborNode);
+                } else {
+                    setVisitedEdges(prev => prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id && e.color !== treeEdgeColor)));
                 }
             }
+
         };
     
         await dfsRecursive(startNode);
-    
+        setCurrentNode(null);
         setText("DFS Done!");
         setTimeout(resetEdges, 1000); 
     };
@@ -1176,7 +1176,11 @@ const Graphs = () => {
                                 onClick={() => handleNodeClick(node)}
                                 style={{
                                     border: (isTSP || isBFS || isPrim || isDFS || isShortestPath) ? (startNode && startNode.id === node.id ? 'none' : '2px solid red') : (selectedNode && selectedNode.id === node.id ? '2px solid red' : 'none'),
-                                    backgroundColor: visitedNodes.some(vn => vn.id === node.id) ? (visitedNodes.find(vn => vn.id === node.id)?.color || componentColors[components.findIndex(comp => comp.some(n => n.id === node.id)) % componentColors.length] || "blue") : 'black',
+                                    backgroundColor: 
+                                    node.id === currentNode?.id ? 'red' : 
+                                    visitedNodes.some(vn => vn.id === node.id) ? 
+                                        (visitedNodes.find(vn => vn.id === node.id)?.color || componentColors[components.findIndex(comp => comp.some(n => n.id === node.id)) % componentColors.length] || "blue") 
+                                        : 'black',
                                     pointerEvents: 'auto',
                                     position: 'absolute'
                                 }}
