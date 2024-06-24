@@ -480,8 +480,13 @@ const Graphs = () => {
                     } else {
                         await sleep(totalSliderCount - sliderValueRef.current);
                     }
+
+                    if(isStepModeRef.current){
+                        setIsPaused(true);
+                        isPausedRef.current = true;
+                    }
                 }
-            
+
                 if (!visitedNodeSet.has(neighborId)) { 
                     setVisitedEdges(prev => [
                         ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
@@ -560,6 +565,11 @@ const Graphs = () => {
                         }
                     } else {
                         await sleep(totalSliderCount - sliderValueRef.current);
+                    }
+
+                    if(isStepModeRef.current){
+                        setIsPaused(true);
+                        isPausedRef.current = true;
                     }
                 }
 
@@ -763,24 +773,29 @@ const Graphs = () => {
             });
     
             stepIndex++;
-            if (isPausedRef.current) {
-                await new Promise(resolve => {
-                    const checkStep = () => {
-                        if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                            resolve();
-                        } else {
-                            setTimeout(checkStep, 50);
+                    if (isPausedRef.current) {
+                        await new Promise(resolve => {
+                            const checkStep = () => {
+                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                    resolve();
+                                } else {
+                                    setTimeout(checkStep, 50);
+                                }
+                            };
+                            checkStep();
+                        });
+                        if(isStepModeRef.current){
+                            setIsPaused(true);
+                            isPausedRef.current = true;
                         }
-                    };
-                    checkStep();
-                });
-                if(isStepModeRef.current){
-                    setIsPaused(true);
-                    isPausedRef.current = true;
-                }
-            } else {
-                await sleep(totalSliderCount - sliderValueRef.current);
-            }
+                    } else {
+                        await sleep(totalSliderCount - sliderValueRef.current);
+                    }
+
+                    if(isStepModeRef.current){
+                        setIsPaused(true);
+                        isPausedRef.current = true;
+                    }
     
             const edge = edgeQueue.shift();
             const { from, to } = edge;
@@ -905,6 +920,11 @@ const Graphs = () => {
                     } else {
                         await sleep(totalSliderCount - sliderValueRef.current);
                     }
+
+                    if(isStepModeRef.current){
+                        setIsPaused(true);
+                        isPausedRef.current = true;
+                    }
                 }
     
                 if (!visitedNodeSet.has(neighborId)) { 
@@ -1018,6 +1038,11 @@ const Graphs = () => {
                         }
                     } else {
                         await sleep(totalSliderCount - sliderValueRef.current);
+                    }
+
+                    if(isStepModeRef.current){
+                        setIsPaused(true);
+                        isPausedRef.current = true;
                     }
                     visitedEdgeSet.add(edge);
                 }
@@ -1190,6 +1215,11 @@ const Graphs = () => {
                     } else {
                         await sleep(totalSliderCount - sliderValueRef.current);
                     }
+
+                    if(isStepModeRef.current){
+                        setIsPaused(true);
+                        isPausedRef.current = true;
+                    }
                     const distance = calculateEdgeLength({ from: currentNode, to: neighborNode });
                     setVisitedEdges(prev => prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)));
                     if (distance < shortestDistance) {
@@ -1207,24 +1237,29 @@ const Graphs = () => {
                 setVisitedNodes(prev => [...prev, { id: nearestNode.id, color: treeEdgeColor }]);
     
                 stepIndex++;
-                if (isPausedRef.current) {
-                    await new Promise(resolve => {
-                        const checkStep = () => {
-                            if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                resolve();
-                            } else {
-                                setTimeout(checkStep, 50);
-                            }
-                        };
-                        checkStep();
-                    });
+                    if (isPausedRef.current) {
+                        await new Promise(resolve => {
+                            const checkStep = () => {
+                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                    resolve();
+                                } else {
+                                    setTimeout(checkStep, 50);
+                                }
+                            };
+                            checkStep();
+                        });
+                        if(isStepModeRef.current){
+                            setIsPaused(true);
+                            isPausedRef.current = true;
+                        }
+                    } else {
+                        await sleep(totalSliderCount - sliderValueRef.current);
+                    }
+
                     if(isStepModeRef.current){
                         setIsPaused(true);
                         isPausedRef.current = true;
                     }
-                } else {
-                    await sleep(totalSliderCount - sliderValueRef.current);
-                }
     
                 currentNode = nearestNode;
                 unvisited.delete(currentNode.id);
@@ -1301,9 +1336,37 @@ const Graphs = () => {
         }
     };
 
-    // Function to sleep 
-    const sleep = (ms) => {
-        return new Promise(resolve => setTimeout(resolve, ms));
+    // Function to sleep and check for pausing
+    const sleep = (duration) => {
+        return new Promise((resolve) => {
+            const interval = 50;
+            let elapsed = 0;
+    
+            const checkPauseAndSleep = () => {
+                if (isPausedRef.current) {
+                    const checkPause = () => {
+                        if(isStepModeRef.current){
+                            setIsStepMode(true);
+                            resolve();
+                        }else if (!isPausedRef.current){
+                            resolve();
+                        }else {
+                            setTimeout(checkPause, interval);
+                        }
+                    };
+                    checkPause();
+                } else {
+                    if (elapsed < duration) {
+                        elapsed += interval;
+                        setTimeout(checkPauseAndSleep, interval);
+                    } else {
+                        resolve();
+                    }
+                }
+            };
+    
+            checkPauseAndSleep();
+        });
     };
 
     // JSX for rendering the component

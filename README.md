@@ -1,7 +1,7 @@
 
 # Data Structure and Algorithm Visualizer
 
-This project is a visuzlier for algorithms and data structures that has two main parts:
+This project is a visualizer for algorithms and data structures that has two main parts:
 
 1. A graph generator that allows you to customize a graph with nodes and edges and run various algorithms on it
 
