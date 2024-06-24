@@ -433,7 +433,7 @@ const Graphs = () => {
     // DFS implementatoin
     const dfs = async (startNode) => {
         setAlgorithmStarted(true);
-        setText("Algorithm in Progress");
+        setText("DFS in progress...");
 
         const visitedNodeSet = new Set();
         const visitedEdgeSet = new Set();
@@ -518,7 +518,7 @@ const Graphs = () => {
     // BFS implementation
     const bfs = async (startNode) => {
         setAlgorithmStarted(true);
-        setText("Algorithm in Progress");
+        setText("BFS in progress...");
         const visitedNodeSet = new Set();
         const visitedEdgeSet = new Set();
         let stepIndex = 0;
@@ -594,7 +594,7 @@ const Graphs = () => {
         setRunningAlgorithm("Kruskall");
         setDisablePause(true);
         setAlgorithmRunning(true);
-        setText("Algorithm in Progress");
+        setText("Kruskall's Algorithm in progress...");
     
         const sortedEdges = [...edges].sort((a, b) => calculateEdgeLength(a) - calculateEdgeLength(b));
         let componentIndex = 0;
@@ -727,7 +727,7 @@ const Graphs = () => {
     // Function to animate Prim's algorithm
     const animatePrimsAlgorithm = async (startNode) => {
         setAlgorithmStarted(true);
-        setText("Algorithm in Progress");
+        setText("Prim's Algorithm in progress...");
         const visitedNodeSet = new Set();
         const edgeQueue = [];
         let stepIndex = 0;
@@ -857,7 +857,7 @@ const Graphs = () => {
     const findConnectedComponents = async () => {
         setRunningAlgorithm("Connected");
         setAlgorithmStarted(true);
-        setText("Algorithm in Progress");
+        setText("Connected Components in progress...");
         setAlgorithmRunning(true);
         const visitedNodeSet = new Set();
         const visitedEdgeSet = new Set();
@@ -953,7 +953,7 @@ const Graphs = () => {
     // Function to find the shortest path between two nodes
     const findShortestPath = async (startNode, targetNode) => {
         setAlgorithmStarted(true);
-        setText("Algorithm in Progress");
+        setText("Shortest Path Algorithm in progress...");
         const dist = {};
         const prev = {};
         const visitedEdgeSet = new Set();
@@ -1104,7 +1104,7 @@ const Graphs = () => {
         setRunningAlgorithm("Color");
         setDisablePause(true);
         setAlgorithmRunning(true);
-        setText("Algorithm in Progress");
+        setText("Graph Coloring in progress...");
 
         const availableColors = componentColors;
         const colors = {};
@@ -1143,7 +1143,7 @@ const Graphs = () => {
     // Function to animate TSP
     const tsp = async (node) => {
         setAlgorithmStarted(true);
-        setText("Algorithm in Progress");
+        setText("TSP in progress...");
         const startNode = node;
         const unvisited = new Set(nodes.map(node => node.id));
         const visited = [];
@@ -1267,7 +1267,32 @@ const Graphs = () => {
             setIsStepMode(false);
             setIsPaused(false);
             isPausedRef.current = false;
-            setText("Algorithm in Progress");
+            switch (runningAlgorithm) {
+                case "DFS":
+                    setText("DFS in progress...")
+                    break;
+                case "BFS":
+                    setText("BFS in progress...")
+                    break;
+                case "Kruskall":
+                    setText("Kruskall's Algorithm in progress...")
+                    break;
+                case "Prim":
+                    setText("Prim's Algorithm in progress...")
+                    break;
+                case "SP":
+                    setText("Shortest Path Algorithm in progress...")
+                    break;
+                case "TSP":
+                    setText("TSP in progress...")
+                    break;
+                case "Connected":
+                    setText("Connected Components in progress..")
+                    break;
+                case "Colors":
+                    setText("Graph Coloring in progress...")
+                    break;
+                }
         } else {
             setIsStepMode(false);
             setIsPaused(true);
