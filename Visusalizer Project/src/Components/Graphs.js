@@ -351,6 +351,13 @@ const Graphs = () => {
         setDragging(false);
     };
 
+    // Function to handle slider change
+    const handleSliderChange = (event) => {
+        const newValue = event.target.value;
+        setSliderValue(newValue);
+        sliderValueRef.current = newValue;
+    }
+
     // Function to start removing an edge
     const startRemovingEdge = () => {
         if(algorithmRunning){
@@ -1113,13 +1120,6 @@ const Graphs = () => {
     
         setTimeout(resetEdges, 1000);
     };
-    
-    // Function to handle slider change
-    const handleSliderChange = (event) => {
-        const newValue = event.target.value;
-        setSliderValue(newValue);
-        sliderValueRef.current = newValue;
-    }
 
     // Function to color graph
     const graphColoring = async () => {
@@ -1502,24 +1502,24 @@ const Graphs = () => {
 
                 {/* Specific Algorithms */}
                 {clickedMST && !selectedNode && edges.length > 0 && (
-                <button style={{ backgroundColor: runningAlgorithm === "Kruskall" ? highlightedButtonColor : "" }}className="graph-button" onClick={animateKruskalsAlgorithm}>Kruskall</button>)}
+                <button style={{border:runningAlgorithm === "Kruskall" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "Kruskall" ? highlightedButtonColor : "" }}className="graph-button" onClick={animateKruskalsAlgorithm}>Kruskall</button>)}
                 {clickedMST && !selectedNode && edges.length > 0 && (
-                <button style={{ backgroundColor: runningAlgorithm === "Prim" ? highlightedButtonColor : "" }}className="graph-button" onClick={startPrim}>Prim</button>)}
+                <button style={{border:runningAlgorithm === "Prim" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "Prim" ? highlightedButtonColor : "" }}className="graph-button" onClick={startPrim}>Prim</button>)}
 
                 {clickedTraversal && !selectedNode && edges.length > 0 && (
-                <button style={{ backgroundColor: runningAlgorithm === "DFS" ? highlightedButtonColor : "" }}className="graph-button" onClick={startDFS}>DFS</button>)}
+                <button style={{border:runningAlgorithm === "DFS" ? highlightedButtonColor : "", backgroundColor: runningAlgorithm === "DFS" ? highlightedButtonColor : "" }}className="graph-button" onClick={startDFS}>DFS</button>)}
                 {clickedTraversal && !selectedNode && edges.length > 0 && (
-                <button style={{ backgroundColor: runningAlgorithm === "BFS" ? highlightedButtonColor : "" }}className="graph-button" onClick={startBFS}>BFS</button>)}
+                <button style={{border:runningAlgorithm === "BFS" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "BFS" ? highlightedButtonColor : "" }}className="graph-button" onClick={startBFS}>BFS</button>)}
 
                 {clickedPaths && !selectedNode && edges.length > 0 && (
-                <button style={{ backgroundColor: runningAlgorithm === "SP" ? highlightedButtonColor : "" }}className="graph-button" onClick={startShortestPath}>Shortest Path</button>)}
+                <button style={{border:runningAlgorithm === "SP" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "SP" ? highlightedButtonColor : "" }}className="graph-button" onClick={startShortestPath}>Shortest Path</button>)}
                 {clickedPaths && !selectedNode && edges.length > 0 && (
-                <button style={{ backgroundColor: runningAlgorithm === "TSP" ? highlightedButtonColor : "" }}className="graph-button" onClick={startTSP}>TSP</button>)}
+                <button style={{border:runningAlgorithm === "TSP" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "TSP" ? highlightedButtonColor : "" }}className="graph-button" onClick={startTSP}>TSP</button>)}
                 
                 {!clickedPaths && !clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
-                <button style={{ backgroundColor: runningAlgorithm === "Connected" ? highlightedButtonColor : "" }}className="graph-button" onClick={findConnectedComponents}>Connected Components</button>)}
+                <button style={{border:runningAlgorithm === "Connected" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "Connected" ? highlightedButtonColor : "" }}className="graph-button" onClick={findConnectedComponents}>Connected Components</button>)}
                 {!clickedPaths && !clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
-                <button style={{ backgroundColor: runningAlgorithm === "Color" ? highlightedButtonColor : "" }}className="graph-button" onClick={graphColoring}>Graph Coloring</button>)}
+                <button style={{border:runningAlgorithm === "Color" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "Color" ? highlightedButtonColor : "" }}className="graph-button" onClick={graphColoring}>Graph Coloring</button>)}
                 
                 
 
