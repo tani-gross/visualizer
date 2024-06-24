@@ -8,6 +8,7 @@ This project is a visuzlier for algorithms and data structures that has two main
 2. A sorter that enables you to shuffle a set of bars and run different sorting algorithms to visualize their behavior.
 ## Features
 **Graph Generator:** Create and customize graphs, add nodes and edges, and visualize graph algorithms.
+
 **Sorting Visualizer:** Shuffle bars and visualize sorting algorithms like selection sort and insertion sort.
 
 ## Getting Started
