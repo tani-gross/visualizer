@@ -756,106 +756,66 @@ const Graphs = () => {
 
     // Function to find connected components in a graph
     const findConnectedComponents = async () => {
-        if (algorithmRunning || isRemovingEdge) {
-            return;
-        }
-        setAlgorithmRunning(true);
         setText("Finding connected components...");
         const visitedNodeSet = new Set();
-        const foundComponents = [];
+        const visitedEdgeSet = new Set();
+        let componentIndex = 0;
     
-        const dfsRecursive = async (currentNode, component, componentColor) => {
+        const dfsRecursive = async (currentNode, componentColor) => {
             if (visitedNodeSet.has(currentNode.id)) {
                 return;
             }
     
             visitedNodeSet.add(currentNode.id);
-            setVisitedNodes(prev => {
+            setVisitedNodes(prev => { 
                 const updatedNodes = [...prev, { id: currentNode.id, color: componentColor }];
                 return updatedNodes;
             });
-            component.push(currentNode);
     
             for (let neighborId of adjList[currentNode.id]) {
-                const neighborNode = nodes.find(node => node.id === neighborId);
-                const edge = edges.find(e => 
+                setCurrentNode(currentNode);     
+                const neighborNode = nodes.find(node => node.id === neighborId); 
+                const edge = edges.find(e =>                                     
                     (e.from.id === currentNode.id && e.to.id === neighborId) ||
                     (e.from.id === neighborId && e.to.id === currentNode.id)
                 );
     
-                if (edge) {
-                    const isEdgeNotInComponentColor = edge.color !== componentColor;
+                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
     
-                    if (isEdgeNotInComponentColor) {
-                        setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
+                if (!visitedEdgeSet.has(edge)) {
+                    await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
+                }
     
-                        await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
-                    }
+                if (!visitedNodeSet.has(neighborId)) { 
+                    setVisitedEdges(prev => [
+                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
+                        { ...edge, color: componentColor }
+                    ]);
+                    visitedEdgeSet.add(edge);
     
-                    if (!visitedNodeSet.has(neighborId)) {
-                        setVisitedEdges(prev => [
-                            ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
-                            { ...edge, color: componentColor }
-                        ]);
-                        await dfsRecursive(neighborNode, component, componentColor);
-                    } else {
-                        setVisitedEdges(prev => [
-                            ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id && e.color !== componentColor)),
-                            { ...edge, color: componentColor }
-                        ]);
-                    }
+                    await dfsRecursive(neighborNode, componentColor);
+                } else {
+                    setVisitedEdges(prev => [
+                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
+                        { ...edge, color: componentColor }
+                    ]);
                 }
             }
         };
     
-        for (let index = 0; index < nodes.length; index++) {
-            const node = nodes[index];
+        for (let node of nodes) {
             if (!visitedNodeSet.has(node.id)) {
-                const component = [];
-                const componentColor = componentColors[foundComponents.length % componentColors.length];
-                await dfsRecursive(node, component, componentColor);
-                foundComponents.push(component);
+                const componentColor = componentColors[componentIndex % componentColors.length];
+                componentIndex++;
+                await dfsRecursive(node, componentColor);
             }
         }
     
-        setComponents(foundComponents); 
-    
-        const animateComponents = (index) => {
-            if (index < foundComponents.length) {
-                const currentComponent = foundComponents[index];
-                const color = componentColors[index % componentColors.length];
-                const newVisitedNodes = [];
-                const newVisitedEdges = [];
-    
-                currentComponent.forEach(node => {
-                    newVisitedNodes.push({ id: node.id, color });
-                    adjList[node.id].forEach(neighborId => {
-                        if (currentComponent.some(n => n.id === neighborId)) {
-                            const edge = edges.find(e =>
-                                (e.from.id === node.id && e.to.id === neighborId) ||
-                                (e.from.id === neighborId && e.to.id === node.id)
-                            );
-                            if (edge && !newVisitedEdges.includes(edge)) {
-                                newVisitedEdges.push(edge);
-                            }
-                        }
-                    });
-                });
-    
-                setVisitedNodes(prev => [...prev, ...newVisitedNodes]);
-                setVisitedEdges(prev => [...prev, ...newVisitedEdges.map(edge => ({ ...edge, color }))]);
-                setTimeout(() => animateComponents(index + 1), sliderValueRef.current); 
-            } else {
-                setText("Connected Components Found!");
-                setTimeout(() => {
-                    resetEdges();
-                    setComponents([]);
-                }, 1000); 
-            }
-        };
-    
-        animateComponents(0);
+        setCurrentNode(null);
+        setText("Connected Components Found!");
+        setTimeout(resetEdges, 1000); 
     };
+    
     
     // Function to start shortest path algorithm
     const startShortestPath = () => {
