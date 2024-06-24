@@ -1285,19 +1285,23 @@ const Graphs = () => {
                     </button>)}
                 {!selectedNode && (edges.length >= 1) && (
                 <button className="graph-button" onClick={startRemovingEdge}>Remove Edge</button>)}
-            </div>
+
                 
-            <div className="graph-content">
-                <div className="slider-container">
-                    {algorithmRunning && !disablePause && (
+                {algorithmRunning && !disablePause && (
                         <>
-                            <button className="" onClick={nextStep}>Next Step</button>
-                            <button className="" onClick={togglePlayPause}>
+                            <h3>Control</h3>
+                            <button className="graph-button" onClick={nextStep}>Next Step</button>
+                            <button className="graph-button" onClick={togglePlayPause}>
                                 {((isPaused || isStepMode) && !disablePause) ? "Play" : "Pause"}
                             </button>
                         </>
                     )}
-                    <h4></h4>
+
+            </div>
+                
+            <div className="graph-content">
+                <div className="slider-container">
+                    <h4 className="slider-label">Algorithm Speed</h4>
                     <div className="slider-content">
                         <h4>Slow</h4>
                         <input 
