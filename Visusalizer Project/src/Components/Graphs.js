@@ -869,103 +869,123 @@ const Graphs = () => {
     }
 
     // Function to find the shortest path between two nodes
-    const findShortestPath = async (startNode, endNode) => {
-        const distances = {};
-        const previousNodes = {};
-        const nodesToVisit = new Set(nodes.map(node => node.id));
-        const edgesToReset = [];
+    const findShortestPath = async (startNode, targetNode) => {
+        setText("Dijkstra's Algorithm in progress...");
+        const dist = {};
+        const prev = {};
+        const visitedEdgeSet = new Set();
+        const visitedNodeSet = new Set();
+        const priorityQueue = new Set(nodes.map(node => node.id)); 
     
         nodes.forEach(node => {
-            distances[node.id] = Infinity;
-            previousNodes[node.id] = null;
+            dist[node.id] = Infinity;
+            prev[node.id] = null;
         });
+        dist[startNode.id] = 0;
     
-        distances[startNode.id] = 0;
-    
-        while (nodesToVisit.size > 0) {
-            const currentNodeId = [...nodesToVisit].reduce((minNodeId, nodeId) => {
-                return distances[nodeId] < distances[minNodeId] ? nodeId : minNodeId;
+        const getMinDistNode = () => {
+            let minNode = null;
+            priorityQueue.forEach(nodeId => {
+                if (minNode === null || dist[nodeId] < dist[minNode]) {
+                    minNode = nodeId;
+                }
             });
+            return minNode;
+        };
     
-            if (distances[currentNodeId] === Infinity) break; 
-
-            //set edge to red here?
+        while (priorityQueue.size > 0) {
+            const currentNodeId = getMinDistNode();
+            const currentNode = nodes.find(node => node.id === currentNodeId);
     
-            nodesToVisit.delete(currentNodeId);
+            if (dist[currentNodeId] === Infinity) break;
     
-            if (currentNodeId === endNode.id) break;
+            priorityQueue.delete(currentNodeId);
     
-            const currentNodeDistance = distances[currentNodeId];
+            if (currentNodeId === targetNode.id) {
+                break;
+            }
     
-            for (const neighborId of adjList[currentNodeId]) {
-                if (!nodesToVisit.has(neighborId)) continue;
-    
-                const edge = edges.find(e =>
-                    (e.from.id === currentNodeId && e.to.id === neighborId) ||
-                    (e.from.id === neighborId && e.to.id === currentNodeId)
+            for (let neighborId of adjList[currentNode.id]) {
+                const neighborNode = nodes.find(node => node.id === neighborId);
+                const edge = edges.find(e => 
+                    (e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (e.from.id === neighborId && e.to.id === currentNode.id)
                 );
     
+                setCurrentNode(currentNode);
                 setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
-                edgesToReset.push(edge);
-                await new Promise(resolve => setTimeout(resolve, sliderValueRef.current)); 
     
-                const altDistance = currentNodeDistance + calculateEdgeLength(edge);
+                if (!visitedEdgeSet.has(edge)) {
+                    await new Promise(resolve => setTimeout(resolve, sliderValueRef.current));
+                    visitedEdgeSet.add(edge);
+                }
     
-                if (altDistance < distances[neighborId]) {
-                    distances[neighborId] = altDistance;
-                    previousNodes[neighborId] = currentNodeId;
+                const alt = dist[currentNode.id] + calculateEdgeLength(edge);
+    
+                if (alt < dist[neighborId]) {
+                    dist[neighborId] = alt;
+                    prev[neighborId] = currentNode.id;
+
+                    setVisitedEdges(prev => [
+                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
+                        { ...edge, color: treeEdgeColor }
+                    ]);
+    
+                    visitedEdgeSet.add(edge);
                 } else {
-                    setVisitedEdges(prev => {
-                        return prev.map(e =>
-                            (e.from.id === edge.from.id && e.to.id === edge.to.id) || (e.from.id === edge.to.id && e.to.id === edge.from.id)
-                                ? { ...e, color: defaultEdgeColor }
-                                : e
-                        );
-                    });
+                    setVisitedEdges(prev => prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id && e.color === currentEdgeColor)));
                 }
             }
+    
+            visitedNodeSet.add(currentNode.id);
+            setVisitedNodes(prev => {
+                const updatedNodes = [...prev, { id: currentNode.id, color: treeEdgeColor }];
+                return updatedNodes;
+            });
         }
+    
+        setStartNode(null);
+        setEndNode(null);
+        setCurrentNode(null);
+        setText("Shortest Path Found!");
     
         const path = [];
-        let currentNodeId = endNode.id;
-    
+
+        let currentNodeId = targetNode.id;
         while (currentNodeId !== null) {
             path.unshift(currentNodeId);
-            currentNodeId = previousNodes[currentNodeId];
+            currentNodeId = prev[currentNodeId];
         }
-
-        for (let i = 0; i < path.length - 1; i++) {
-            const nodeId = path[i];
-            const nextNodeId = path[i + 1];
-            setVisitedNodes(prev => [...prev, { id: nodeId, color: treeEdgeColor }]);
-            const edge = edges.find(e =>
-                (e.from.id === nodeId && e.to.id === nextNodeId) ||
-                (e.from.id === nextNodeId && e.to.id === nodeId)
-            );
-            setVisitedEdges(prev => prev.map(e =>
-                (e.from.id === edge.from.id && e.to.id === edge.to.id) || (e.from.id === edge.to.id && e.to.id === edge.from.id)
-                    ? { ...e, color: treeEdgeColor }
-                    : e
-            ));
-            await new Promise(resolve => setTimeout(resolve, sliderValueRef.current)); 
+        console.log(path);
+        if(path.length === 1){
+            setText("No path Found!");
+            setTimeout(resetEdges, 1000);
+            return;
         }
     
-        setVisitedNodes(prev => [...prev, { id: endNode.id, color: treeEdgeColor }]);
+        setVisitedEdges(prev => {
+            return prev.map(e => {
+                if (path.includes(e.from.id) && path.includes(e.to.id)) {
+                    return { ...e, color: treeEdgeColor };
+                } else {
+                    return { ...e, color: defaultEdgeColor };
+                }
+            });
+        });
 
-        setVisitedEdges(prev => prev.map(e => e.color === currentEdgeColor ? { ...e, color: defaultEdgeColor } : e));
+        setVisitedNodes(prev => {
+            return nodes.map(node => {
+                if (path.includes(node.id)) {
+                    return { id: node.id, color: treeEdgeColor };
+                } else {
+                    return { id: node.id, color: "black" };
+                }
+            });
+        });
     
-        if (path[0] === startNode.id) {
-            setTimeout(resetEdges, 1000);
-            setText("Shortest Path Found");
-            setStartNode(null);
-            setEndNode(null);
-        } else {
-            setTimeout(resetEdges, 1000);
-            setText("No Path Found");
-            setStartNode(null);
-            setEndNode(null);
-        }
+        setTimeout(resetEdges, 1000);
     };
+    
     
     // Function to handle slider change
     const handleSliderChange = (event) => {
