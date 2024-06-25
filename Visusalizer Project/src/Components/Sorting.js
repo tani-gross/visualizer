@@ -10,11 +10,15 @@ const Sorting = () => {
     const [isSorting, setIsSorting] = useState(false); // Sorting state
     const [speed, setSpeed] = useState(50); // Animation speed
     const [lightingBlue, setLightingBlue] = useState(false);
+    const [runningAlgorithm, setRunningAlgorithm] = useState(null);
 
     // Refs for persistent values
     const barsRef = useRef([]);
     const speedRef = useRef(speed);
     const isMountedRef = useRef(false);
+
+    // Other constants
+    const highlightedButtonColor = "lightblue";
     
 
     // Effect to trac component mount status
@@ -81,24 +85,31 @@ const Sorting = () => {
 
         switch (sortMethod) { // Switch statement that selects the sorting method and runs that function
             case "selectionSort":
+                setRunningAlgorithm("selectionSort")
                 selectionSort(barsCopy);
                 break;
             case "insertionSort":
+                setRunningAlgorithm("insertionSort")
                 insertionSort(barsCopy);
                 break;
             case "mergeSort":
+                setRunningAlgorithm("mergeSort")
                 mergeSort(barsCopy);
                 break;
             case "quickSort":
+                setRunningAlgorithm("quickSort")
                 quickSort(barsCopy);
                 break;
             case "heapSort":
+                setRunningAlgorithm("heapSort")
                 heapSort(barsCopy);
                 break;
             case "bubbleSort":
+                setRunningAlgorithm("bubbleSort")
                 bubbleSort(barsCopy);
                 break;
             default:
+                setRunningAlgorithm("shellSort")
                 shellSort(barsCopy);
                 break;
         }
@@ -134,6 +145,7 @@ const Sorting = () => {
 
         setIsSorting(false);
         setLightingBlue(false);
+        setRunningAlgorithm(null);
     }
 
     /*
@@ -327,7 +339,7 @@ const Sorting = () => {
                 setBars([...barsArray]);
             }
     
-            await sleep(125 - ms);
+            await sleep(150 - ms);
     
             if (barElements[i] && barElements[j]) {
                 barElements[i].classList.remove('active');
@@ -380,7 +392,7 @@ const Sorting = () => {
                     <input 
                         type="range" 
                         min="25" 
-                        max="100" 
+                        max="125" 
                         step="1" 
                         value={speed} 
                         onChange={handleSpeed}
@@ -388,13 +400,13 @@ const Sorting = () => {
                 </div>
             </div>
             <div className="sorting-button-container">
-                <button className="sorting-button" onClick={() => handleSort("selectionSort")} disabled={isSorting}>Selection Sort</button>
-                <button className="sorting-button" onClick={() => handleSort("insertionSort")} disabled={isSorting}>Insertion Sort</button>
-                <button className="sorting-button" onClick={() => handleSort("bubbleSort")} disabled={isSorting}>Bubble Sort</button>
-                <button className="sorting-button" onClick={() => handleSort("mergeSort")} disabled={isSorting}>Merge Sort</button>
-                <button className="sorting-button" onClick={() => handleSort("quickSort")} disabled={isSorting}>Quick Sort</button>
-                <button className="sorting-button" onClick={() => handleSort("heapSort")} disabled={isSorting}>Heap Sort</button>
-                <button className="sorting-button" onClick={() => handleSort("shellSort")} disabled={isSorting}>Shell Sort</button>
+                <button style={{border:runningAlgorithm === "selectionSort" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "selectionSort" ? highlightedButtonColor : "" }}className="sorting-button" onClick={() => handleSort("selectionSort")} disabled={isSorting}>Selection Sort</button>
+                <button style={{border:runningAlgorithm === "insertionSort" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "insertionSort" ? highlightedButtonColor : "" }}className="sorting-button" onClick={() => handleSort("insertionSort")} disabled={isSorting}>Insertion Sort</button>
+                <button style={{border:runningAlgorithm === "bubbleSort" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "bubbleSort" ? highlightedButtonColor : "" }}className="sorting-button" onClick={() => handleSort("bubbleSort")} disabled={isSorting}>Bubble Sort</button>
+                <button style={{border:runningAlgorithm === "mergeSort" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "mergeSort" ? highlightedButtonColor : "" }}className="sorting-button" onClick={() => handleSort("mergeSort")} disabled={isSorting}>Merge Sort</button>
+                <button style={{border:runningAlgorithm === "quickSort" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "quickSort" ? highlightedButtonColor : "" }}className="sorting-button" onClick={() => handleSort("quickSort")} disabled={isSorting}>Quick Sort</button>
+                <button style={{border:runningAlgorithm === "heapSort" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "heapSort" ? highlightedButtonColor : "" }}className="sorting-button" onClick={() => handleSort("heapSort")} disabled={isSorting}>Heap Sort</button>
+                <button style={{border:runningAlgorithm === "shellSort" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "shellSort" ? highlightedButtonColor : "" }}className="sorting-button" onClick={() => handleSort("shellSort")} disabled={isSorting}>Shell Sort</button>
             </div>
         </div>
     );
