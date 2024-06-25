@@ -42,6 +42,7 @@ const Graphs = () => {
     const [disablePause, setDisablePause] = useState(false);
     const [algorithmStarted, setAlgorithmStarted]=  useState(false);
     const [runningAlgorithm, setRunningAlgorithm] = useState(null);
+    const [isDirected, setIsDirected] = useState(false);
 
     // Constants for UI text and colors
     const highlightedButtonColor = "lightblue";
@@ -95,21 +96,23 @@ const Graphs = () => {
     const calculateAngle = (edge) => {
         const dx = edge.to.x - edge.from.x;
         const dy = edge.to.y - edge.from.y;
+        let flipped = false;
         let angle = Math.atan2(dy, dx) * (180 / Math.PI);
     
         if (dx >= 0 && dy < 0) {
-            // First quadrant: leave angle as is
         } else if (dx < 0 && dy < 0) {
-            // Second quadrant: negate angle
             angle += 180;
+            flipped = true;
         } else if (dx < 0 && dy >= 0) {
-            // Third quadrant: negate angle
             angle -= 180;
+            flipped = true;
         } else if (dx >= 0 && dy >= 0) {
-            // Fourth quadrant: leave angle as is
         }
     
-        return angle;
+        return {
+            angle: angle,
+            flipped: flipped
+        };
     };
 
     // Function to add a new node to the graph
@@ -168,11 +171,18 @@ const Graphs = () => {
                 continue;
             }
 
-            if(response > ((numNodes * (numNodes - 1)) / 2)){
-                alert("Invalid input. Too many edges for the graph");
-                continue;
+            if(!isDirected){
+                if(response > ((numNodes * (numNodes - 1)) / 2)){
+                    alert("Invalid input. Too many edges for the graph");
+                    continue;
+                }
+            }else{
+                if(response > ((numNodes * (numNodes - 1)))){
+                    alert("Invalid input. Too many edges for the graph");
+                    continue;
+                }
             }
-
+            
             if(response < 0){
                 alert("Invalid input. Not enough edges");
                 continue;
@@ -222,15 +232,17 @@ const Graphs = () => {
             const from = newNodes[Math.floor(Math.random() * numNodes)];
             const to = newNodes[Math.floor(Math.random() * numNodes)];
             if (from.id !== to.id) {
-                const edgeExists = newEdges.some(edge =>
+                const edgeExists = newEdges.some(edge => 
                     (edge.from.id === from.id && edge.to.id === to.id) ||
-                    (edge.from.id === to.id && edge.to.id === from.id)
+                    (!isDirected && edge.from.id === to.id && edge.to.id === from.id)
                 );
                 if (!edgeExists) {
                     const newEdge = { from, to, color: defaultEdgeColor };
                     newEdges.push(newEdge);
                     newAdjList[from.id].push(to.id);
-                    newAdjList[to.id].push(from.id);
+                    if(!isDirected){
+                        newAdjList[to.id].push(from.id);
+                    }
                 }
             }
         }
@@ -281,7 +293,7 @@ const Graphs = () => {
             if (selectedNode && selectedNode.id !== node.id) {
                 const edgeExists = edges.some(edge =>
                     (edge.from.id === selectedNode.id && edge.to.id === node.id) ||
-                    (edge.from.id === node.id && edge.to.id === selectedNode.id)
+                    (!isDirected && edge.from.id === node.id && edge.to.id === selectedNode.id)
                 );
 
                 if(!edgeExists){
@@ -293,7 +305,9 @@ const Graphs = () => {
                         if (!newAdjList[selectedNode.id]) newAdjList[selectedNode.id] = [];
                         if (!newAdjList[node.id]) newAdjList[node.id] = [];
                         newAdjList[selectedNode.id].push(node.id);
-                        newAdjList[node.id].push(selectedNode.id);
+                        if (!isDirected) {
+                            newAdjList[node.id].push(selectedNode.id);
+                        }
                         return newAdjList;
                     })
                 }
@@ -382,10 +396,18 @@ const Graphs = () => {
     const handleAddEdge = () => {
         if (selectedNode === null) return;
 
-        if(((nodes.length * (nodes.length - 1)) / 2) === edges.length){
-            alert("cannot add another edge");
-            return;
+        if(!isDirected){
+            if(((nodes.length * (nodes.length - 1)) / 2) === edges.length){
+                alert("cannot add another edge");
+                return;
+            }
+        }else{
+            if(((nodes.length * (nodes.length - 1))) === edges.length){
+                alert("cannot add another edge");
+                return;
+            }
         }
+        
 
         if (nodes.length < 2) {
             alert("You need at least two nodes to add an edge.");
@@ -1389,13 +1411,18 @@ const Graphs = () => {
                 {!selectedNode && nodes.length > 0 && (
                 <button className="graph-button" onClick={resetGraph}>Reset Graph</button>)}
 
+                {/* Edge Editing */}
                 {!selectedNode && edges.length > 0 && (
                     <h3>Edge Editing</h3>)}
+                {!selectedNode && edges.length > 0 && (
+                    <button className="graph-button" onClick={() => {if(edges.length>0){setIsDirected(!isDirected)}}}>
+                        {isDirected ? 'Set Undirected' : 'Set Directed'}
+                    </button>)}
                 {!selectedNode && edges.length > 0 && (
                     <button className="graph-button" onClick={() => {if(edges.length>0){setShowWeights(!showWeights)}}}>
                         {showWeights ? 'Hide Weights' : 'Show Weights'}
                     </button>)}
-                {!selectedNode && (edges.length >= 1) && (
+                {!selectedNode && edges.length > 0 && (
                 <button className="graph-button" onClick={startRemovingEdge}>Remove Edge</button>)}
 
                 
@@ -1431,7 +1458,36 @@ const Graphs = () => {
                 <svg className="edges-svg" style={{ position: 'absolute', width: '100%', height: '100%' }}>
                     {edges.map((edge, index) => {
                         const midpoint = calculateMidpoint(edge);
-                        const angle = calculateAngle(edge);
+                        const { angle, flipped } = calculateAngle(edge);
+                        const arrowLength = 20;
+                        const arrowAngle = 30;
+                        const nodeRadius = 10;
+                
+                        
+                        const dx = edge.to.x - edge.from.x;
+                        const dy = edge.to.y - edge.from.y;
+                        const length = Math.sqrt(dx * dx + dy * dy);
+                        const unitDx = dx / length;
+                        const unitDy = dy / length;
+                        
+                        const baseX = edge.to.x - nodeRadius * unitDx + 10;
+                        const baseY = edge.to.y - nodeRadius * unitDy + 10;
+                        
+                
+                        let arrowX1, arrowY1, arrowX2, arrowY2;
+                        if (flipped) {
+                            arrowX1 = baseX + arrowLength * Math.cos((angle + arrowAngle) * Math.PI / 180);
+                            arrowY1 = baseY + arrowLength * Math.sin((angle + arrowAngle) * Math.PI / 180);
+                            arrowX2 = baseX + arrowLength * Math.cos((angle - arrowAngle) * Math.PI / 180);
+                            arrowY2 = baseY + arrowLength * Math.sin((angle - arrowAngle) * Math.PI / 180);
+                        } else {
+                            arrowX1 = baseX - arrowLength * Math.cos((angle - arrowAngle) * Math.PI / 180);
+                            arrowY1 = baseY - arrowLength * Math.sin((angle - arrowAngle) * Math.PI / 180);
+                            arrowX2 = baseX - arrowLength * Math.cos((angle + arrowAngle) * Math.PI / 180);
+                            arrowY2 = baseY - arrowLength * Math.sin((angle + arrowAngle) * Math.PI / 180);
+                        }
+
+
                         return (
                             <React.Fragment key={index}>
                                 <line
@@ -1443,6 +1499,26 @@ const Graphs = () => {
                                     strokeWidth={isRemovingEdge ? 8 : 4}
                                     onClick={() => handleEdgeClick(edge)}
                                 />
+                                {isDirected && (
+                                   <>
+                                        <line
+                                            x1={baseX}
+                                            y1={baseY}
+                                            x2={arrowX1}
+                                            y2={arrowY1}
+                                            stroke={visitedEdges.find(e => e.from.id === edge.from.id && e.to.id === edge.to.id)?.color || (isRemovingEdge ? "red" : "grey")}
+                                            strokeWidth={isRemovingEdge ? 8 : 4}
+                                        />
+                                        <line
+                                            x1={baseX}
+                                            y1={baseY}
+                                            x2={arrowX2}
+                                            y2={arrowY2}
+                                            stroke={visitedEdges.find(e => e.from.id === edge.from.id && e.to.id === edge.to.id)?.color || (isRemovingEdge ? "red" : "grey")}
+                                            strokeWidth={isRemovingEdge ? 8 : 4}
+                                        />
+                                    </>
+                                )}
                                 {showWeights && (
                                     <text
                                         x={midpoint.x + 10}
