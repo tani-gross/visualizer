@@ -1412,8 +1412,100 @@ const Graphs = () => {
         });
     };
 
+    const findStrongComponents = async () => {
+        setRunningAlgorithm("Connected");
+        setAlgorithmStarted(true);
+        setText("Strong Components in progress...");
+        setAlgorithmRunning(true);
+        /*const visitedNodeSet = new Set();
+        const visitedEdgeSet = new Set();
+        let componentIndex = 0;
+        let stepIndex = 0;
+    
+        const dfsRecursive = async (currentNode, componentColor) => {
+            if (visitedNodeSet.has(currentNode.id)) {
+                return;
+            }
+    
+            visitedNodeSet.add(currentNode.id);
+            setVisitedNodes(prev => { 
+                const updatedNodes = [...prev, { id: currentNode.id, color: componentColor }];
+                return updatedNodes;
+            });
+    
+            for (let neighborId of adjList[currentNode.id]) {
+                setCurrentNode(currentNode);     
+                const neighborNode = nodes.find(node => node.id === neighborId); 
+                const edge = edges.find(e =>                                     
+                    (e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (e.from.id === neighborId && e.to.id === currentNode.id)
+                );
+    
+                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
+    
+                if (!visitedEdgeSet.has(edge)) {
+                    stepIndex++;
+                    if (isPausedRef.current) {
+                        await new Promise(resolve => {
+                            const checkStep = () => {
+                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                    resolve();
+                                } else {
+                                    setTimeout(checkStep, 50);
+                                }
+                            };
+                            checkStep();
+                        });
+                        if(isStepModeRef.current){
+                            setIsPaused(true);
+                            isPausedRef.current = true;
+                        }
+                    } else {
+                        await sleep(totalSliderCount - sliderValueRef.current);
+                    }
+
+                    if(isStepModeRef.current){
+                        setIsPaused(true);
+                        isPausedRef.current = true;
+                    }
+                }
+    
+                if (!visitedNodeSet.has(neighborId)) { 
+                    setVisitedEdges(prev => [
+                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
+                        { ...edge, color: componentColor }
+                    ]);
+                    visitedEdgeSet.add(edge);
+    
+                    await dfsRecursive(neighborNode, componentColor);
+                } else {
+                    setVisitedEdges(prev => [
+                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
+                        { ...edge, color: componentColor }
+                    ]);
+                }
+            }
+        };
+    
+        for (let node of nodes) {
+            if (!visitedNodeSet.has(node.id)) {
+                const componentColor = componentColors[componentIndex % componentColors.length];
+                componentIndex++;
+                await dfsRecursive(node, componentColor);
+            }
+        }*/
+    
+        setCurrentNode(null);
+        setAlgorithmStarted(false);
+        setText("Connected Components Done!");
+        setTimeout(resetEdges, 1000); 
+    };
+
     // Function to switch between directed and undirected graphs
     const toggleGraphType = () => {
+        if(algorithmRunning){
+            return;
+        }
         if (isDirected) {
             const consolidatedEdges = [];
             const edgeSet = new Set();
@@ -1662,11 +1754,11 @@ const Graphs = () => {
                 <button style={{border:runningAlgorithm === "TSP" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "TSP" ? highlightedButtonColor : "" }}className="graph-button" onClick={startTSP}>TSP</button>)}
                 
                 {!clickedPaths && !clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
-                <button style={{border:runningAlgorithm === "Connected" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "Connected" ? highlightedButtonColor : "" }}className="graph-button" onClick={findConnectedComponents}>Connected Components</button>)}
-                {!clickedPaths && !clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
                 <button style={{border:runningAlgorithm === "Color" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "Color" ? highlightedButtonColor : "" }}className="graph-button" onClick={graphColoring}>Graph Coloring</button>)}
-                
-                
+                {!isDirected && !clickedPaths && !clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
+                <button style={{border:runningAlgorithm === "Connected" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "Connected" ? highlightedButtonColor : "" }}className="graph-button" onClick={findConnectedComponents}>Connected Components</button>)}
+                {isDirected && !clickedPaths && !clickedMST && !clickedTraversal && !selectedNode && edges.length > 0 && (
+                <button style={{border:runningAlgorithm === "Connected" ? highlightedButtonColor : "",  backgroundColor: runningAlgorithm === "Connected" ? highlightedButtonColor : "" }}className="graph-button" onClick={findStrongComponents}>Strong Components</button>)}
 
                 {/* Back Button */}
                 {(clickedTraversal || clickedMST || clickedPaths) && !selectedNode && (
