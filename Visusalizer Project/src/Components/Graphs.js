@@ -148,7 +148,9 @@ const Graphs = () => {
 
         do{
             const response = prompt("Enter the number of nodes for the graph:", "");
-
+            if(response === null){
+                return;
+            }
             if(isNaN(response)){
                 alert("Invalid input. Please enter numbers only");
                 continue;
@@ -165,6 +167,9 @@ const Graphs = () => {
 
         do{
             const response = prompt("Enter the number of edges for the graph:", "");
+            if(response === null){
+                return;
+            }
 
             if(isNaN(response)){
                 alert("Invalid input. Please enter numbers only");
