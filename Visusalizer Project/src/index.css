@@ -288,3 +288,18 @@
 
 /* Home Page Styles */
 
+.home-container {
+  width: 80%;
+  max-width: 1200px;
+  padding: 20px;
+}
+.home-section {
+  margin: 20px 0;
+}
+.home-section-title {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+}
+.home-list-item {
+  margin: 5px 0;
+}
