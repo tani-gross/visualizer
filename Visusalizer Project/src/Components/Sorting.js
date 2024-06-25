@@ -9,6 +9,7 @@ const Sorting = () => {
     const [numBars, setNumBars] = useState(50); // Number of bars
     const [isSorting, setIsSorting] = useState(false); // Sorting state
     const [speed, setSpeed] = useState(50); // Animation speed
+    const [lightingBlue, setLightingBlue] = useState(false);
 
     // Refs for persistent values
     const barsRef = useRef([]);
@@ -43,7 +44,7 @@ const Sorting = () => {
 
     //Function to shuffle bars
     const shuffleBars = (barsArray) => {
-        if(isSorting){
+        if(isSorting || lightingBlue){
             return;
         }
         
@@ -94,6 +95,9 @@ const Sorting = () => {
             case "heapSort":
                 heapSort(barsCopy);
                 break;
+            case "bubbleSort":
+                bubbleSort(barsCopy);
+                break;
             default:
                 shellSort(barsCopy);
                 break;
@@ -112,6 +116,7 @@ const Sorting = () => {
 
     // Function to light up bars after sorting
     const lightUpBlue = async (barsArray) => {
+        setLightingBlue(true);
         const barElements = barsRef.current;
         for(let i = 0; i < barsArray.length; i++){
             if(barElements[i]){
@@ -128,6 +133,7 @@ const Sorting = () => {
         }
 
         setIsSorting(false);
+        setLightingBlue(false);
     }
 
     /*
@@ -282,13 +288,29 @@ const Sorting = () => {
                 for (let j = i; j >= gap && barsArray[j] < barsArray[j - gap]; j -= gap) {
                     await swap(barsArray, j, j - gap, speedRef.current);
     
-                    await new Promise(resolve => setTimeout(resolve, speedRef.current));
                     setBars(barsArray);
                 }
             }
         }
     
         lightUpBlue(barsArray);
+    }
+
+    const bubbleSort = async (barsArray) => {
+        let n = barsArray.length;
+        let swapped;
+        do {
+            swapped = false;
+            for(let i = 0; i < n - 1; i++){
+                if(barsArray[i] > barsArray[i + 1]){
+                    await swap(barsArray, i, i + 1, speedRef.current);
+                    swapped = true;
+                }
+            }
+            n--
+        }while(swapped);
+        lightUpBlue(barsArray);
+
     }
 
     // Function to swap two bars
@@ -353,7 +375,7 @@ const Sorting = () => {
                         />
                     </div>
                     
-                    <button className="sorting-button-small" onClick={() => shuffleBars([...bars])} disabled={isSorting}>Shuffle</button>
+                    <button className="sorting-button-small" onClick={() => shuffleBars([...bars])}>Shuffle</button>
                     <h4>Speed</h4>
                     <input 
                         type="range" 
@@ -368,6 +390,7 @@ const Sorting = () => {
             <div className="sorting-button-container">
                 <button className="sorting-button" onClick={() => handleSort("selectionSort")} disabled={isSorting}>Selection Sort</button>
                 <button className="sorting-button" onClick={() => handleSort("insertionSort")} disabled={isSorting}>Insertion Sort</button>
+                <button className="sorting-button" onClick={() => handleSort("bubbleSort")} disabled={isSorting}>Bubble Sort</button>
                 <button className="sorting-button" onClick={() => handleSort("mergeSort")} disabled={isSorting}>Merge Sort</button>
                 <button className="sorting-button" onClick={() => handleSort("quickSort")} disabled={isSorting}>Quick Sort</button>
                 <button className="sorting-button" onClick={() => handleSort("heapSort")} disabled={isSorting}>Heap Sort</button>
