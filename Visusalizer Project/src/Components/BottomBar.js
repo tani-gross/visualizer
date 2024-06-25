@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import Github from "../Logo Pics/Github.png"
-import LinkedIn from "../Logo Pics/LinkedIn.png"
+import Github from "../Pictures/Github.png"
+import LinkedIn from "../Pictures/LinkedIn.png"
 
 const BottomBar = () => {
     const copyToClipboard = (text) => {

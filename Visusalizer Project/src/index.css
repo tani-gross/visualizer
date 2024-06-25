@@ -10,7 +10,7 @@
 
 .content {
   margin: 40px auto;
-  height: 610px;
+  height: 100%;
 }
 
 /* Navigation Bar Styles */
@@ -82,7 +82,7 @@
   align-items: center;
   flex-shrink: 0;
   height: 100%;
-  padding-bottom: 15px;
+  padding-bottom: 25px;
 }
 
 .sorting-button-container {
@@ -161,6 +161,7 @@
   padding-top: 32px;
   position: relative;
   justify-content: center;
+  padding-bottom: 20px;
 }
 
 .graph-content {
@@ -303,4 +304,20 @@
 }
 .home-list-item {
   margin: 5px 0;
+}
+
+
+.screenshots {
+  display: flex;
+  flex-direction: columns;
+}
+
+.screenshot {
+  margin: 1em 0;
+}
+
+.screenshot img {
+  max-height: 500px;
+  height: auto;
+  display: block;
 }
