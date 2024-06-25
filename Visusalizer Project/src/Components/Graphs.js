@@ -147,7 +147,7 @@ const Graphs = () => {
         var numEdges = -1;
 
         do{
-            const response = prompt("Enter the number of nodes:", "");
+            const response = prompt("Enter the number of nodes for the graph:", "");
 
             if(isNaN(response)){
                 alert("Invalid input. Please enter numbers only");
@@ -164,7 +164,7 @@ const Graphs = () => {
         }while(numNodes === 0);
 
         do{
-            const response = prompt("Enter the number of edges:", "");
+            const response = prompt("Enter the number of edges for the graph:", "");
 
             if(isNaN(response)){
                 alert("Invalid input. Please enter numbers only");
@@ -173,12 +173,12 @@ const Graphs = () => {
 
             if(!isDirected){
                 if(response > ((numNodes * (numNodes - 1)) / 2)){
-                    alert("Invalid input. Too many edges for the graph");
+                    alert("Invalid input. Too many edges for the undirected graph");
                     continue;
                 }
             }else{
                 if(response > ((numNodes * (numNodes - 1)))){
-                    alert("Invalid input. Too many edges for the graph");
+                    alert("Invalid input. Too many edges for the directed graph");
                     continue;
                 }
             }
@@ -483,9 +483,14 @@ const Graphs = () => {
                 setCurrentNode(currentNode);     
                 const neighborNode = nodes.find(node => node.id === neighborId); 
                 const edge = edges.find(e =>                                     
-                    (e.from.id === currentNode.id && e.to.id === neighborId) ||
-                    (e.from.id === neighborId && e.to.id === currentNode.id)
+                    (isDirected && e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (!isDirected && ((e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (e.from.id === neighborId && e.to.id === currentNode.id)))
                 );
+
+                if(!edge){
+                    continue;
+                }
 
                 setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
                
@@ -534,7 +539,7 @@ const Graphs = () => {
         await dfsRecursive(startNode);
         setCurrentNode(null);
         setAlgorithmStarted(false);
-        setText("Algorithm Done!");
+        setText("DFS Done!");
         setTimeout(resetEdges, 1000); 
     };
 
@@ -568,10 +573,15 @@ const Graphs = () => {
             
             for (let neighborId of adjList[currentNode.id]) {
                 const neighborNode = nodes.find(node => node.id === neighborId);
-                const edge = edges.find(e => 
-                    (e.from.id === currentNode.id && e.to.id === neighborId) ||
-                    (e.from.id === neighborId && e.to.id === currentNode.id)
+                const edge = edges.find(e =>                                     
+                    (isDirected && e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (!isDirected && ((e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (e.from.id === neighborId && e.to.id === currentNode.id)))
                 );
+
+                if(!edge){
+                    continue;
+                }
     
                 setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
 
@@ -621,7 +631,7 @@ const Graphs = () => {
     
         setCurrentNode(null);
         setAlgorithmStarted(false);
-        setText("Algorithm Done!");
+        setText("BFS Done!");
         setTimeout(resetEdges, 1000); 
     };
     
@@ -630,6 +640,7 @@ const Graphs = () => {
         if (algorithmRunning || isRemovingEdge) {
             return;
         }
+        setIsDirected(false);
         setRunningAlgorithm("Kruskall");
         setDisablePause(true);
         setAlgorithmRunning(true);
@@ -687,7 +698,7 @@ const Graphs = () => {
                         setTimeout(() => animateComponentMST(foundComponents[componentIndex]), 0); 
                     } else {
                         setTimeout(resetEdges, 1000);
-                        setText("Algorithm Done!");
+                        setText("Kruskall's Algorithm Done!");
                     }
                 }
             };
@@ -766,6 +777,7 @@ const Graphs = () => {
     // Function to animate Prim's algorithm
     const animatePrimsAlgorithm = async (startNode) => {
         setAlgorithmStarted(true);
+        setIsDirected(false);
         setText("Prim's Algorithm in progress...");
         const visitedNodeSet = new Set();
         const edgeQueue = [];
@@ -791,7 +803,7 @@ const Graphs = () => {
         const animateStep = async () => {
             if (visitedNodeSet.size === nodes.length || edgeQueue.length === 0) {
                 setAlgorithmStarted(false);
-                setText("Algorithm Done!");
+                setText("Prim's Algorithm Done!");
                 setTimeout(resetEdges, 1000);
                 return;
             }
@@ -983,7 +995,7 @@ const Graphs = () => {
     
         setCurrentNode(null);
         setAlgorithmStarted(false);
-        setText("Algorithm Done!");
+        setText("Connected Components Done!");
         setTimeout(resetEdges, 1000); 
     };
     
@@ -1041,9 +1053,14 @@ const Graphs = () => {
             for (let neighborId of adjList[currentNode.id]) {
                 const neighborNode = nodes.find(node => node.id === neighborId);
                 const edge = edges.find(e => 
-                    (e.from.id === currentNode.id && e.to.id === neighborId) ||
-                    (e.from.id === neighborId && e.to.id === currentNode.id)
+                    (isDirected && e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (!isDirected && ((e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (e.from.id === neighborId && e.to.id === currentNode.id)))
                 );
+
+                if(!edge){
+                    continue;
+                }
     
                 setCurrentNode(currentNode);
                 setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
@@ -1104,7 +1121,7 @@ const Graphs = () => {
         setEndNode(null);
         setAlgorithmStarted(false);
         setCurrentNode(null);
-        setText("Algorithm Done!");
+        setText("Shortest Path Done!");
     
         const path = [];
 
@@ -1172,7 +1189,7 @@ const Graphs = () => {
             await new Promise(resolve => setTimeout(resolve, totalSliderCount - sliderValueRef.current));
         }
 
-        setText("Algorithm Done!");
+        setText("Graph Coloring Done!");
         setTimeout(resetEdges, 1000);
     }
 
@@ -1211,45 +1228,49 @@ const Graphs = () => {
                 setCurrentNode(currentNode);
                 const neighborNode = nodes.find(node => node.id === neighborId);
                 // eslint-disable-next-line
-                const edge = edges.find(e =>
-                    (e.from.id === currentNode.id && e.to.id === neighborNode.id) ||
-                    (e.from.id === neighborNode.id && e.to.id === currentNode.id)
+                const edge = edges.find(e => 
+                    (isDirected && e && e.from && e.to && e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (!isDirected && e && e.from && e.to && ((e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (e.from.id === neighborId && e.to.id === currentNode.id)))
                 );
     
-                if (edge) {
-                    setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
-                    stepIndex++;
-                    if (isPausedRef.current) {
-                        await new Promise(resolve => {
-                            const checkStep = () => {
-                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                    resolve();
-                                } else {
-                                    setTimeout(checkStep, 50);
-                                }
-                            };
-                            checkStep();
-                        });
-                        if(isStepModeRef.current){
-                            setIsPaused(true);
-                            isPausedRef.current = true;
-                        }
-                    } else {
-                        await sleep(totalSliderCount - sliderValueRef.current);
-                    }
-
+                if (!edge) {
+                    continue;
+                }
+                
+                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
+                stepIndex++;
+                if (isPausedRef.current) {
+                    await new Promise(resolve => {
+                        const checkStep = () => {
+                            if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                resolve();
+                            } else {
+                                setTimeout(checkStep, 50);
+                            }
+                        };
+                        checkStep();
+                    });
                     if(isStepModeRef.current){
                         setIsPaused(true);
                         isPausedRef.current = true;
                     }
-                    const distance = calculateEdgeLength({ from: currentNode, to: neighborNode });
-                    setVisitedEdges(prev => prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)));
-                    if (distance < shortestDistance) {
-                        shortestDistance = distance;
-                        nearestNode = neighborNode;
-                        currentEdge = edge;
-                    }
+                } else {
+                    await sleep(totalSliderCount - sliderValueRef.current);
                 }
+
+                if(isStepModeRef.current){
+                    setIsPaused(true);
+                    isPausedRef.current = true;
+                }
+                const distance = calculateEdgeLength({ from: currentNode, to: neighborNode });
+                setVisitedEdges(prev => prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)));
+                if (distance < shortestDistance) {
+                    shortestDistance = distance;
+                    nearestNode = neighborNode;
+                    currentEdge = edge;
+                }
+                
             }
     
             if (nearestNode && currentEdge) {
@@ -1298,7 +1319,7 @@ const Graphs = () => {
     
         setCurrentNode(null);
         setAlgorithmStarted(false);
-        setText("Algorithm Done!");
+        setText("TSP Done!");
         setTimeout(resetEdges, 1000);
     };
 
@@ -1391,6 +1412,34 @@ const Graphs = () => {
         });
     };
 
+    // Function to switch between directed and undirected graphs
+    const toggleGraphType = () => {
+        if (isDirected) {
+            const consolidatedEdges = [];
+            const edgeSet = new Set();
+    
+            edges.forEach(edge => {
+                const edgeKey = `${Math.min(edge.from.id, edge.to.id)}-${Math.max(edge.from.id, edge.to.id)}`;
+                if (!edgeSet.has(edgeKey)) {
+                    edgeSet.add(edgeKey);
+                    consolidatedEdges.push(edge);
+                }
+            });
+    
+            const newAdjList = {};
+            consolidatedEdges.forEach(edge => {
+                if (!newAdjList[edge.from.id]) newAdjList[edge.from.id] = [];
+                if (!newAdjList[edge.to.id]) newAdjList[edge.to.id] = [];
+                newAdjList[edge.from.id].push(edge.to.id);
+                newAdjList[edge.to.id].push(edge.from.id);
+            });
+    
+            setEdges(consolidatedEdges);
+            setAdjList(newAdjList);
+        }
+        setIsDirected(!isDirected);
+    }
+
     // JSX for rendering the component
     return (
         <div className="main-container">
@@ -1415,7 +1464,7 @@ const Graphs = () => {
                 {!selectedNode && edges.length > 0 && (
                     <h3>Edge Editing</h3>)}
                 {!selectedNode && edges.length > 0 && (
-                    <button className="graph-button" onClick={() => {if(edges.length>0){setIsDirected(!isDirected)}}}>
+                    <button className="graph-button" onClick={toggleGraphType}>
                         {isDirected ? 'Set Undirected' : 'Set Directed'}
                     </button>)}
                 {!selectedNode && edges.length > 0 && (
@@ -1459,7 +1508,7 @@ const Graphs = () => {
                     {edges.map((edge, index) => {
                         const midpoint = calculateMidpoint(edge);
                         const { angle, flipped } = calculateAngle(edge);
-                        const arrowLength = 20;
+                        const arrowLength = 15;
                         const arrowAngle = 30;
                         const nodeRadius = 10;
                 
@@ -1473,28 +1522,48 @@ const Graphs = () => {
                         const baseX = edge.to.x - nodeRadius * unitDx + 10;
                         const baseY = edge.to.y - nodeRadius * unitDy + 10;
                         
+                        const edgeCount = edges.filter(e => 
+                            (e.from.id === edge.from.id && e.to.id === edge.to.id) || 
+                            (e.from.id === edge.to.id && e.to.id === edge.from.id)
+                        ).length;
+
+                        let offsetX = 0;
+                        let offsetY = 0;
+
+                        if (edgeCount > 1) {
+                            offsetX = 5 * unitDy; 
+                            offsetY = -5 * unitDx;
+                        }
+
+                        const adjustedFromX = edge.from.x + 10 + offsetX;
+                        const adjustedFromY = edge.from.y + 10 + offsetY;
+                        const adjustedToX = edge.to.x + 10 + offsetX;
+                        const adjustedToY = edge.to.y + 10 + offsetY;
+
+                        const adjustedBaseX = baseX + offsetX;
+                        const adjustedBaseY = baseY + offsetY;
                 
                         let arrowX1, arrowY1, arrowX2, arrowY2;
                         if (flipped) {
-                            arrowX1 = baseX + arrowLength * Math.cos((angle + arrowAngle) * Math.PI / 180);
-                            arrowY1 = baseY + arrowLength * Math.sin((angle + arrowAngle) * Math.PI / 180);
-                            arrowX2 = baseX + arrowLength * Math.cos((angle - arrowAngle) * Math.PI / 180);
-                            arrowY2 = baseY + arrowLength * Math.sin((angle - arrowAngle) * Math.PI / 180);
+                            arrowX1 = adjustedBaseX + arrowLength * Math.cos((angle + arrowAngle) * Math.PI / 180);
+                            arrowY1 = adjustedBaseY + arrowLength * Math.sin((angle + arrowAngle) * Math.PI / 180);
+                            arrowX2 = adjustedBaseX + arrowLength * Math.cos((angle - arrowAngle) * Math.PI / 180);
+                            arrowY2 = adjustedBaseY + arrowLength * Math.sin((angle - arrowAngle) * Math.PI / 180);
                         } else {
-                            arrowX1 = baseX - arrowLength * Math.cos((angle - arrowAngle) * Math.PI / 180);
-                            arrowY1 = baseY - arrowLength * Math.sin((angle - arrowAngle) * Math.PI / 180);
-                            arrowX2 = baseX - arrowLength * Math.cos((angle + arrowAngle) * Math.PI / 180);
-                            arrowY2 = baseY - arrowLength * Math.sin((angle + arrowAngle) * Math.PI / 180);
+                            arrowX1 = adjustedBaseX - arrowLength * Math.cos((angle - arrowAngle) * Math.PI / 180);
+                            arrowY1 = adjustedBaseY - arrowLength * Math.sin((angle - arrowAngle) * Math.PI / 180);
+                            arrowX2 = adjustedBaseX - arrowLength * Math.cos((angle + arrowAngle) * Math.PI / 180);
+                            arrowY2 = adjustedBaseY - arrowLength * Math.sin((angle + arrowAngle) * Math.PI / 180);
                         }
 
 
                         return (
                             <React.Fragment key={index}>
                                 <line
-                                    x1={edge.from.x + 10}
-                                    y1={edge.from.y + 10}
-                                    x2={edge.to.x + 10}
-                                    y2={edge.to.y + 10}
+                                    x1={adjustedFromX}
+                                    y1={adjustedFromY}
+                                    x2={adjustedToX}
+                                    y2={adjustedToY}
                                     stroke={visitedEdges.find(e => e.from.id === edge.from.id && e.to.id === edge.to.id)?.color || (isRemovingEdge ? "red" : "grey")}
                                     strokeWidth={isRemovingEdge ? 8 : 4}
                                     onClick={() => handleEdgeClick(edge)}
@@ -1502,18 +1571,18 @@ const Graphs = () => {
                                 {isDirected && (
                                    <>
                                         <line
-                                            x1={baseX}
-                                            y1={baseY}
+                                            x1={adjustedToX}
+                                            y1={adjustedToY}
                                             x2={arrowX1}
                                             y2={arrowY1}
                                             stroke={visitedEdges.find(e => e.from.id === edge.from.id && e.to.id === edge.to.id)?.color || (isRemovingEdge ? "red" : "grey")}
                                             strokeWidth={isRemovingEdge ? 8 : 4}
                                         />
                                         <line
-                                            x1={baseX}
-                                            y1={baseY}
-                                            x2={arrowX2}
-                                            y2={arrowY2}
+                                           x1={adjustedToX}
+                                           y1={adjustedToY}
+                                           x2={arrowX2}
+                                           y2={arrowY2}
                                             stroke={visitedEdges.find(e => e.from.id === edge.from.id && e.to.id === edge.to.id)?.color || (isRemovingEdge ? "red" : "grey")}
                                             strokeWidth={isRemovingEdge ? 8 : 4}
                                         />
