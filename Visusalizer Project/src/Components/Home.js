@@ -10,7 +10,7 @@ const Home = () => {
     return (  
         <div className="home-container">
         <section className="home-section">
-            <h1 style={{color: "#f1356d"}} className="home-section-title">Welcome to the Data Structure and Algorithm Visualizer</h1>
+            <h1 className="home-section-title">Welcome to the Data Structure and Algorithm Visualizer</h1>
             <p>Explore various graph algorithms and sorting techniques through interactive visualizations. This tool provides a hands-on approach to learning algorithms, helping you to understand how they work step-by-step.</p>
         </section>
 
