@@ -1422,32 +1422,61 @@ const Graphs = () => {
         setAlgorithmStarted(true);
         setText("Strong Components in progress...");
         setAlgorithmRunning(true);
-        /*const visitedNodeSet = new Set();
+    
+        const stack = [];
+        const visitedNodeSet = new Set();
         const visitedEdgeSet = new Set();
-        let componentIndex = 0;
+        const reverseAdjList = {};
         let stepIndex = 0;
     
-        const dfsRecursive = async (currentNode, componentColor) => {
-            if (visitedNodeSet.has(currentNode.id)) {
+        const dfs1 = async (node) => {
+            if (visitedNodeSet.has(node.id)) {
                 return;
             }
+
+            visitedNodeSet.add(node.id);
+            
+            for (let neighborId of adjList[node.id]) {
+                if (!visitedNodeSet.has(neighborId)) {
+                    const neighborNode = nodes.find(n => n.id === neighborId);
+                    await dfs1(neighborNode);
+                }
+            }
+            
+            stack.push(node);
+        };
     
-            visitedNodeSet.add(currentNode.id);
+        const reverseGraph = () => {
+            nodes.forEach(node => {
+                reverseAdjList[node.id] = [];
+            });
+            edges.forEach(edge => {
+                reverseAdjList[edge.to.id].push(edge.from.id);
+            });
+        };
+
+        const dfs2 = async (node, componentColor) => {
+            if (visitedNodeSet.has(node.id)) {
+                return;
+            }
+            
+            visitedNodeSet.add(node.id);
             setVisitedNodes(prev => { 
-                const updatedNodes = [...prev, { id: currentNode.id, color: componentColor }];
+                const updatedNodes = [...prev, { id: node.id, color: componentColor }];
                 return updatedNodes;
             });
-    
-            for (let neighborId of adjList[currentNode.id]) {
-                setCurrentNode(currentNode);     
-                const neighborNode = nodes.find(node => node.id === neighborId); 
-                const edge = edges.find(e =>                                     
-                    (e.from.id === currentNode.id && e.to.id === neighborId) ||
-                    (e.from.id === neighborId && e.to.id === currentNode.id)
-                );
-    
+        
+            for (let neighborId of reverseAdjList[node.id]) {
+                setCurrentNode(node);
+                const neighborNode = nodes.find(n => n.id === neighborId);
+                const edge = edges.find(e => e.from.id === node.id && e.to.id === neighborId);
+                
+                if (!edge) {
+                    continue;
+                }
+        
                 setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
-    
+        
                 if (!visitedEdgeSet.has(edge)) {
                     stepIndex++;
                     if (isPausedRef.current) {
@@ -1461,20 +1490,20 @@ const Graphs = () => {
                             };
                             checkStep();
                         });
-                        if(isStepModeRef.current){
+                        if (isStepModeRef.current) {
                             setIsPaused(true);
                             isPausedRef.current = true;
                         }
                     } else {
                         await sleep(totalSliderCount - sliderValueRef.current);
                     }
-
-                    if(isStepModeRef.current){
+        
+                    if (isStepModeRef.current) {
                         setIsPaused(true);
                         isPausedRef.current = true;
                     }
                 }
-    
+                
                 if (!visitedNodeSet.has(neighborId)) { 
                     setVisitedEdges(prev => [
                         ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
@@ -1482,7 +1511,7 @@ const Graphs = () => {
                     ]);
                     visitedEdgeSet.add(edge);
     
-                    await dfsRecursive(neighborNode, componentColor);
+                    await dfs2(neighborNode, componentColor);
                 } else {
                     setVisitedEdges(prev => [
                         ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
@@ -1492,20 +1521,35 @@ const Graphs = () => {
             }
         };
     
+        reverseGraph();
+
         for (let node of nodes) {
+            if (!visitedNodeSet.has(node.id)) {
+                await dfs1(node);
+            }
+        }
+
+        console.log("DFS 1 Done!");
+    
+        visitedNodeSet.clear();
+        visitedEdgeSet.clear();
+    
+        let componentIndex = 0;
+        while (stack.length > 0) {
+            const node = stack.pop();
             if (!visitedNodeSet.has(node.id)) {
                 const componentColor = componentColors[componentIndex % componentColors.length];
                 componentIndex++;
-                await dfsRecursive(node, componentColor);
+                await dfs2(node, componentColor);
             }
-        }*/
+        }
     
         setCurrentNode(null);
         setAlgorithmStarted(false);
-        setText("Connected Components Done!");
-        setTimeout(resetEdges, 1000); 
+        setText("Strong Components Done!");
+        setTimeout(resetEdges, 1000);
     };
-
+    
     // Function to switch between directed and undirected graphs
     const toggleGraphType = () => {
         if(algorithmRunning){
