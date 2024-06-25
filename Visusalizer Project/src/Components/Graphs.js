@@ -1553,9 +1553,9 @@ const Graphs = () => {
                 <button className="graph-button" onClick={resetGraph}>Reset Graph</button>)}
 
                 {/* Edge Editing */}
-                {!selectedNode && edges.length > 0 && (
+                {!selectedNode && (
                     <h3>Edge Editing</h3>)}
-                {!selectedNode && edges.length > 0 && (
+                {!selectedNode && (
                     <button className="graph-button" onClick={toggleGraphType}>
                         {isDirected ? 'Set Undirected' : 'Set Directed'}
                     </button>)}
