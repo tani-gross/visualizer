@@ -32,6 +32,10 @@ const Home = () => {
                 <li class="home-list-item">CSS</li>
             </ul>
         </section>
+        <section class="contributors home-section">
+            <h2 class="home-section-title">Note:</h2>
+            <p>This is just a temporary page</p>
+        </section>
     </div>
     );
 }
