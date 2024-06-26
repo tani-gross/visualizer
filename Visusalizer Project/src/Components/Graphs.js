@@ -1730,7 +1730,7 @@ const Graphs = () => {
                                 {showWeights && (
                                     <text
                                         x={midpoint.x + 10}
-                                        y={midpoint.y + 7}
+                                        y={edgeCount > 1 ? midpoint.y + 2 : midpoint.y + 7}
                                         fill="black"
                                         fontSize="12"
                                         transform={`rotate(${angle}, ${midpoint.x + 10}, ${midpoint.y + 10})`}
