@@ -1529,8 +1529,6 @@ const Graphs = () => {
             }
         }
 
-        console.log("DFS 1 Done!");
-    
         visitedNodeSet.clear();
         visitedEdgeSet.clear();
     
@@ -1660,8 +1658,8 @@ const Graphs = () => {
                         const unitDx = dx / length;
                         const unitDy = dy / length;
                         
-                        const baseX = edge.to.x - nodeRadius * unitDx + 10;
-                        const baseY = edge.to.y - nodeRadius * unitDy + 10;
+                        const baseX = edge.to.x - nodeRadius * unitDx;
+                        const baseY = edge.to.y - nodeRadius * unitDy;
                         
                         const edgeCount = edges.filter(e => 
                             (e.from.id === edge.from.id && e.to.id === edge.to.id) || 
@@ -1678,23 +1676,23 @@ const Graphs = () => {
 
                         const adjustedFromX = edge.from.x + 10 + offsetX;
                         const adjustedFromY = edge.from.y + 10 + offsetY;
-                        const adjustedToX = edge.to.x + 10 + offsetX;
-                        const adjustedToY = edge.to.y + 10 + offsetY;
+                        const adjustedToX = baseX + 10 + offsetX ;
+                        const adjustedToY = baseY + 10 + offsetY;
 
-                        const adjustedBaseX = baseX + offsetX;
-                        const adjustedBaseY = baseY + offsetY;
+                        const arrowBaseX = baseX + offsetX + 10;
+                        const arrowBaseY = baseY + offsetY + 10;
                 
                         let arrowX1, arrowY1, arrowX2, arrowY2;
                         if (flipped) {
-                            arrowX1 = adjustedBaseX + arrowLength * Math.cos((angle + arrowAngle) * Math.PI / 180);
-                            arrowY1 = adjustedBaseY + arrowLength * Math.sin((angle + arrowAngle) * Math.PI / 180);
-                            arrowX2 = adjustedBaseX + arrowLength * Math.cos((angle - arrowAngle) * Math.PI / 180);
-                            arrowY2 = adjustedBaseY + arrowLength * Math.sin((angle - arrowAngle) * Math.PI / 180);
+                            arrowX1 = arrowBaseX + arrowLength * Math.cos((angle + arrowAngle) * Math.PI / 180);
+                            arrowY1 = arrowBaseY + arrowLength * Math.sin((angle + arrowAngle) * Math.PI / 180);
+                            arrowX2 = arrowBaseX + arrowLength * Math.cos((angle - arrowAngle) * Math.PI / 180);
+                            arrowY2 = arrowBaseY + arrowLength * Math.sin((angle - arrowAngle) * Math.PI / 180);
                         } else {
-                            arrowX1 = adjustedBaseX - arrowLength * Math.cos((angle - arrowAngle) * Math.PI / 180);
-                            arrowY1 = adjustedBaseY - arrowLength * Math.sin((angle - arrowAngle) * Math.PI / 180);
-                            arrowX2 = adjustedBaseX - arrowLength * Math.cos((angle + arrowAngle) * Math.PI / 180);
-                            arrowY2 = adjustedBaseY - arrowLength * Math.sin((angle + arrowAngle) * Math.PI / 180);
+                            arrowX1 = arrowBaseX - arrowLength * Math.cos((angle - arrowAngle) * Math.PI / 180);
+                            arrowY1 = arrowBaseY - arrowLength * Math.sin((angle - arrowAngle) * Math.PI / 180);
+                            arrowX2 = arrowBaseX - arrowLength * Math.cos((angle + arrowAngle) * Math.PI / 180);
+                            arrowY2 = arrowBaseY - arrowLength * Math.sin((angle + arrowAngle) * Math.PI / 180);
                         }
 
 
