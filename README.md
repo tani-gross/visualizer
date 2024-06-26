@@ -3,7 +3,7 @@
 
 This project is a visualizer for algorithms and data structures that has two main parts:
 
-1. A graph generator that allows you to customize a graph with nodes and edges and run various algorithms on it
+1. A graph generator that allows you to customize a directed or undirected graph with nodes and edges and run various algorithms on it
 
 2. A sorter that enables you to shuffle a set of bars and run different sorting algorithms to visualize their behavior.
 ## Features
@@ -27,7 +27,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ### Running the Visualizer
 **Graph Generator:** 
- - Use the interface to add nodes and edges.
+ - Use the interface to add nodes and edges and switch between directed and undirected graphs
  - Run different graph algorithms to see how they work on the custom graph.
 
 **Sorting Visualizer:**
@@ -37,6 +37,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 ## Screenshots
 
 ![Graph Screenshot](<Visusalizer Project/src/Pictures/Graph Screenshot.png?>)
+![Graph Screenshot 2](<Visusalizer Project/src/Pictures/Graph Screenshot2.png?>)
 
 ![Sorting Screenshot](<Visusalizer Project/src/Pictures/Sorting Screenshot.png?>)
 

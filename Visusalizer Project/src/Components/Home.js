@@ -20,7 +20,7 @@ const Home = () => {
                 <li><strong>Sorting Algorithms:</strong> Visualize selection sort, insertion sort, bubble sort, merge sort, quicksort, heap sort, and shell sort.</li>
                 <li><strong>Graph Algorithms:</strong> Explore traversal algorithms (DFS), MST algorithms (Prim), path algorithms (TSP), and more</li>
                 <li><strong>Interactive Controls:</strong> Adjust the speed, number of elements, and pause/resume/step through the animations for better understanding.</li>
-                <li><strong>Customizable Graphs:</strong> Add, remove, and connect nodes to create your own graphs.</li>
+                <li><strong>Customizable Graphs:</strong> Use directed or undirected edges, add, remove, and connect nodes to create your own graphs.</li>
             </ul>
         </section>
 
