@@ -226,7 +226,6 @@ const Graphs = () => {
 
     // DFS implementatoin
     const dfs = async (startNode) => {
-        console.log("dfs start");
         setAlgorithmStarted(true);
         setText("DFS in progress...");
 
@@ -1029,30 +1028,13 @@ const Graphs = () => {
         setAlgorithmStarted(true);
         setText("Strong Components in progress...");
         setAlgorithmRunning(true);
-
+    
         const stack = [];
         const visitedNodeSet = new Set();
         const visitedEdgeSet = new Set();
         const reverseAdjList = {};
         let stepIndex = 0;
-
-        const dfs1 = async (node) => {
-            if (visitedNodeSet.has(node.id)) {
-                return;
-            }
-
-            visitedNodeSet.add(node.id);
-            
-            for (let neighborId of adjList[node.id]) {
-                if (!visitedNodeSet.has(neighborId)) {
-                    const neighborNode = nodes.find(n => n.id === neighborId);
-                    await dfs1(neighborNode);
-                }
-            }
-            
-            stack.push(node);
-        };
-
+    
         const reverseGraph = () => {
             nodes.forEach(node => {
                 reverseAdjList[node.id] = [];
@@ -1061,7 +1043,24 @@ const Graphs = () => {
                 reverseAdjList[edge.to.id].push(edge.from.id);
             });
         };
-
+    
+        const dfs1 = async (node) => {
+            if (visitedNodeSet.has(node.id)) {
+                return;
+            }
+    
+            visitedNodeSet.add(node.id);
+            
+            for (let neighborId of reverseAdjList[node.id]) {
+                if (!visitedNodeSet.has(neighborId)) {
+                    const neighborNode = nodes.find(n => n.id === neighborId);
+                    await dfs1(neighborNode);
+                }
+            }
+            
+            stack.push(node);
+        };
+    
         const dfs2 = async (node, componentColor) => {
             if (visitedNodeSet.has(node.id)) {
                 return;
@@ -1073,7 +1072,7 @@ const Graphs = () => {
                 return updatedNodes;
             });
         
-            for (let neighborId of reverseAdjList[node.id]) {
+            for (let neighborId of adjList[node.id]) {
                 setCurrentNode(node);
                 const neighborNode = nodes.find(n => n.id === neighborId);
                 const edge = edges.find(e => e.from.id === node.id && e.to.id === neighborId);
@@ -1117,7 +1116,7 @@ const Graphs = () => {
                         { ...edge, color: componentColor }
                     ]);
                     visitedEdgeSet.add(edge);
-
+    
                     await dfs2(neighborNode, componentColor);
                 } else {
                     setVisitedEdges(prev => [
@@ -1127,18 +1126,18 @@ const Graphs = () => {
                 }
             }
         };
-
+    
         reverseGraph();
-
+    
         for (let node of nodes) {
             if (!visitedNodeSet.has(node.id)) {
                 await dfs1(node);
             }
         }
-
+    
         visitedNodeSet.clear();
         visitedEdgeSet.clear();
-
+    
         let componentIndex = 0;
         while (stack.length > 0) {
             const node = stack.pop();
@@ -1148,7 +1147,7 @@ const Graphs = () => {
                 await dfs2(node, componentColor);
             }
         }
-
+    
         setCurrentNode(null);
         setAlgorithmStarted(false);
         setText("Strong Components Done!");
