@@ -27,7 +27,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ### Running the Visualizer
 **Graph Generator:** 
- - Use the interface to add nodes and edges and switch between directed and undirected graphs
+ - Use the interface to add nodes and edges and switch between directed and undirected graphs.
  - Run different graph algorithms to see how they work on the custom graph.
 
 **Sorting Visualizer:**
