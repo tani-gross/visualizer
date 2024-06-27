@@ -1,8 +1,10 @@
-import React, {useState, useRef, useEffect } from 'react';
+import React, {useEffect, useState, useRef } from 'react';
 import Draggable from 'react-draggable';
+import {calculateAngle, calculateEdgeLength, calculateMidpoint} from './GraphUtilities';
+import UnionFind from "./UnionFind"
+
 
 const Graphs = () => {
-    // State variables to manage graph nodes, edges, and various UI states
     const [text, setText] = useState("Add Node or Generate Graph to Begin");
     const [nodes, setNodes] = useState([]);
     const [nodeCount, setNodeCount] = useState(0);
@@ -11,11 +13,10 @@ const Graphs = () => {
     const [isAddingEdge, setIsAddingEdge] = useState(false);
     const [dragging, setDragging] = useState(false);
     const [isRemovingEdge, setIsRemovingEdge] = useState(false);
-    // eslint-disable-next-line
     const [visitedNodes, setVisitedNodes] = useState([]);
     const [visitedEdges, setVisitedEdges] = useState([]);
     const [adjList, setAdjList] = useState([]);
-    const [clickedTraversal, setClickedTraveral] = useState(false);
+    const [clickedTraversal, setClickedTraversal] = useState(false);
     const [clickedMST, setClickedMST] = useState(false);
     const [clickedPaths, setClickedPaths] = useState(false);
     const [isDFS, setIsDFS] = useState(false);
@@ -26,7 +27,7 @@ const Graphs = () => {
     const [isShortestPath, setIsShortestPath] = useState(false);
     const [startNode, setStartNode] = useState(null);
     const [endNode, setEndNode] = useState(null);
-    const [componentColors] = useState(["blue", "green", "orange", "purple", "pink", "yellow", "gold", "coral", "crimson", "cyan", "darkgreen", "drakblue", "darkorange", "darkorchid", "darkred", "deeppink", "darkviolet", "deepskyblue", "forestgreen", "fuchsia"]);
+    const componentColors = ["blue", "green", "orange", "purple", "pink", "yellow", "gold", "coral", "crimson", "cyan", "darkgreen", "drakblue", "darkorange", "darkorchid", "darkred", "deeppink", "darkviolet", "deepskyblue", "forestgreen", "fuchsia"];
     const [components, setComponents] = useState([]);
     const [showWeights, setShowWeights] = useState(false);
     const [sliderValue, setSliderValue] = useState(250);
@@ -40,15 +41,15 @@ const Graphs = () => {
     const [isStepMode, setIsStepMode] = useState(false);
     const isStepModeRef = useRef(isStepMode);
     const [disablePause, setDisablePause] = useState(false);
-    const [algorithmStarted, setAlgorithmStarted]=  useState(false);
+    const [algorithmStarted, setAlgorithmStarted] = useState(false);
     const [runningAlgorithm, setRunningAlgorithm] = useState(null);
     const [isDirected, setIsDirected] = useState(false);
 
     // Constants for UI text and colors
     const highlightedButtonColor = "lightblue";
     const startingText = "Move Node, Select Node, or Press Button to Continue";
-    const treeEdgeColor = "blue"; 
-    const currentEdgeColor = "red"; 
+    const treeEdgeColor = "blue";
+    const currentEdgeColor = "red";
     const defaultEdgeColor = "grey";
 
     // Use Effect to differentiate between modes
@@ -56,7 +57,7 @@ const Graphs = () => {
         isStepModeRef.current = isStepMode;
     }, [isStepMode]);
 
-    // Use Effect to allow pausing mid-alg
+    // Use sEffect to allow pausing mid-alg
     useEffect(() => {
         isPausedRef.current = isPaused;
     }, [isPaused]);
@@ -78,42 +79,1085 @@ const Graphs = () => {
         setRunningAlgorithm(null);
     };
 
-    // Function to calculate edge length
-    const calculateEdgeLength = (edge) => {
-        const dx = edge.from.x - edge.to.x;
-        const dy = edge.from.y - edge.to.y;
-        return Math.sqrt(dx * dx + dy * dy);
+    // Function to set traversal mode
+    const setClickTraversal = () => {
+        if(algorithmRunning){
+            return;
+        }
+
+        setClickedTraversal(true);
+    }
+
+    // Function to set MST mode
+    const setClickMST = () => {
+        if(algorithmRunning){
+            return;
+        }
+
+        setClickedMST(true);
+    }
+
+    // Function to set Paths mode
+    const setClickPath = () => {
+        if(algorithmRunning){
+            return;
+        }
+
+        setClickedPaths(true);
+    }
+
+    // Functino to go back from algorithm selection
+    const goBack = () => {
+
+        if(algorithmRunning || isRemovingEdge){
+            return;
+        }
+        
+        setClickedMST(false);
+        setClickedTraversal(false);
+        setClickedPaths(false);
+        setAlgorithmRunning(false);
+        setText(startingText);
+    }
+
+    // Function to step in the algorithm
+    const nextStep = () => {
+        if(isPausedRef.current){
+            setIsStepMode(true);
+            if(isPausedRef.current){
+                setCurrentStep(prev => {
+                    const next = prev + 1;
+                    currentStepRef.current = next;
+                    return next;
+                });
+            }
+            setIsPaused(false);
+            isPausedRef.current = false;
+        }
     };
 
-    // Function to calculate midpoiint of an edge
-    const calculateMidpoint = (edge) => {
-        const midX = (edge.from.x + edge.to.x) / 2;
-        const midY = (edge.from.y + edge.to.y) / 2;
-        return { x: midX, y: midY };
-    };
-    
-    // Fucntion to calculate angle of an edge
-    const calculateAngle = (edge) => {
-        const dx = edge.to.x - edge.from.x;
-        const dy = edge.to.y - edge.from.y;
-        let flipped = false;
-        let angle = Math.atan2(dy, dx) * (180 / Math.PI);
-    
-        if (dx >= 0 && dy < 0) {
-        } else if (dx < 0 && dy < 0) {
-            angle += 180;
-            flipped = true;
-        } else if (dx < 0 && dy >= 0) {
-            angle -= 180;
-            flipped = true;
-        } else if (dx >= 0 && dy >= 0) {
+    // Function to toggle button 
+    const togglePlayPause = () => {
+        if (isPausedRef.current) {
+            setIsStepMode(false);
+            setIsPaused(false);
+            isPausedRef.current = false;
+            switch (runningAlgorithm) {
+                case "DFS":
+                    setText("DFS in progress...")
+                    break;
+                case "BFS":
+                    setText("BFS in progress...")
+                    break;
+                case "Kruskall":
+                    setText("Kruskall's Algorithm in progress...")
+                    break;
+                case "Prim":
+                    setText("Prim's Algorithm in progress...")
+                    break;
+                case "SP":
+                    setText("Shortest Path Algorithm in progress...")
+                    break;
+                case "TSP":
+                    setText("TSP in progress...")
+                    break;
+                case "Connected":
+                    setText("Connected Components in progress..")
+                    break;
+                case "Colors":
+                    setText("Graph Coloring in progress...")
+                    break;
+                default:
+                    setText("Shouldn't get here");
+                }
+        } else {
+            setIsStepMode(false);
+            setIsPaused(true);
+            isPausedRef.current = true;
+            setText("Algorithm is Paused");
         }
-    
-        return {
-            angle: angle,
-            flipped: flipped
-        };
     };
+    
+    // Function to switch between directed and undirected graphs
+    const toggleGraphType = () => {
+        if(algorithmRunning){
+            return;
+        }
+        if (isDirected) {
+            const consolidatedEdges = [];
+            const edgeSet = new Set();
+    
+            edges.forEach(edge => {
+                const edgeKey = `${Math.min(edge.from.id, edge.to.id)}-${Math.max(edge.from.id, edge.to.id)}`;
+                if (!edgeSet.has(edgeKey)) {
+                    edgeSet.add(edgeKey);
+                    consolidatedEdges.push(edge);
+                }
+            });
+    
+            const newAdjList = {};
+            consolidatedEdges.forEach(edge => {
+                if (!newAdjList[edge.from.id]) newAdjList[edge.from.id] = [];
+                if (!newAdjList[edge.to.id]) newAdjList[edge.to.id] = [];
+                newAdjList[edge.from.id].push(edge.to.id);
+                newAdjList[edge.to.id].push(edge.from.id);
+            });
+    
+            setEdges(consolidatedEdges);
+            setAdjList(newAdjList);
+        }
+        setIsDirected(!isDirected);
+    }
+
+    /*
+        Algorithms
+    */
+
+        // Function to start DFS
+    const startDFS = () => {
+        if(algorithmRunning|| isRemovingEdge){
+            return;
+        }
+        setRunningAlgorithm("DFS");
+        setIsDFS(true);
+        setAlgorithmRunning(true);
+        setText("Select Node to begin DFS");
+    }
+
+    // DFS implementatoin
+    const dfs = async (startNode) => {
+        console.log("dfs start");
+        setAlgorithmStarted(true);
+        setText("DFS in progress...");
+
+        const visitedNodeSet = new Set();
+        const visitedEdgeSet = new Set();
+        let stepIndex = 0;
+
+        const dfsRecursive = async (currentNode) => {
+            if (visitedNodeSet.has(currentNode.id)) {
+                return;
+            }
+            console.log(currentNode);
+            visitedNodeSet.add(currentNode.id);
+            setVisitedNodes(prev => { 
+                const updatedNodes = [...prev, { id: currentNode.id, color: treeEdgeColor }];
+                return updatedNodes;
+            });
+
+            for (let neighborId of adjList[currentNode.id]) {
+                setCurrentNode(currentNode);     
+                const neighborNode = nodes.find(node => node.id === neighborId); 
+                const edge = edges.find(e =>                                     
+                    (isDirected && e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (!isDirected && ((e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (e.from.id === neighborId && e.to.id === currentNode.id)))
+                );
+                console.log(neighborNode);
+                console.log(edge);
+
+                if(!edge){
+                    continue;
+                }
+
+                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
+            
+                if (!visitedEdgeSet.has(edge)) {
+                    stepIndex++;
+                    if (isPausedRef.current) {
+                        await new Promise(resolve => {
+                            const checkStep = () => {
+                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                    resolve();
+                                } else {
+                                    setTimeout(checkStep, 50);
+                                }
+                            };
+                            checkStep();
+                        });
+                        if(isStepModeRef.current){
+                            setIsPaused(true);
+                            isPausedRef.current = true;
+                        }
+                    } else {
+                        await sleep(totalSliderCount - sliderValueRef.current);
+                    }
+
+                    if(isStepModeRef.current){
+                        setIsPaused(true);
+                        isPausedRef.current = true;
+                    }
+                }
+
+                if (!visitedNodeSet.has(neighborId)) { 
+                    setVisitedEdges(prev => [
+                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
+                        { ...edge, color: treeEdgeColor }
+                    ]);
+                    visitedEdgeSet.add(edge);
+
+                    await dfsRecursive(neighborNode);
+                } else {
+                    setVisitedEdges(prev => prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id && e.color !== treeEdgeColor)));
+                }
+            }
+
+        };
+
+        await dfsRecursive(startNode);
+        setCurrentNode(null);
+        setAlgorithmStarted(false);
+        setText("DFS Done!");
+        setTimeout(resetEdges, 1000); 
+    };
+
+    // Function to start BFS
+    const startBFS = () => {
+        if(algorithmRunning || isRemovingEdge){
+            return;
+        }
+        setRunningAlgorithm("BFS");
+        setIsBFS(true);
+        setAlgorithmRunning(true);
+        setText("Select Node to begin BFS");
+    }
+
+    // BFS implementation
+    const bfs = async (startNode) => {
+        setAlgorithmStarted(true);
+        setText("BFS in progress...");
+        const visitedNodeSet = new Set();
+        const visitedEdgeSet = new Set();
+        let stepIndex = 0;
+
+
+        const queue = [startNode];
+        visitedNodeSet.add(startNode.id);
+        setVisitedNodes([{ id: startNode.id, color: treeEdgeColor }]);
+
+        while (queue.length > 0) {
+            const currentNode = queue.shift();
+            setCurrentNode(currentNode);
+            
+            for (let neighborId of adjList[currentNode.id]) {
+                const neighborNode = nodes.find(node => node.id === neighborId);
+                const edge = edges.find(e =>                                     
+                    (isDirected && e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (!isDirected && ((e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (e.from.id === neighborId && e.to.id === currentNode.id)))
+                );
+
+                if(!edge){
+                    continue;
+                }
+
+                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
+
+                if(!visitedEdgeSet.has(edge)){
+                    stepIndex++;
+                    if (isPausedRef.current) {
+                        await new Promise(resolve => {
+                            const checkStep = () => {
+                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                    resolve();
+                                } else {
+                                    setTimeout(checkStep, 50);
+                                }
+                            };
+                            checkStep();
+                        });
+                        if(isStepModeRef.current){
+                            setIsPaused(true);
+                            isPausedRef.current = true;
+                        }
+                    } else {
+                        await sleep(totalSliderCount - sliderValueRef.current);
+                    }
+
+                    if(isStepModeRef.current){
+                        setIsPaused(true);
+                        isPausedRef.current = true;
+                    }
+                }
+
+                if (!visitedNodeSet.has(neighborId)) {
+                    visitedNodeSet.add(neighborId);
+                    queue.push(neighborNode);
+
+                    setVisitedEdges(prev => [
+                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
+                        { ...edge, color: treeEdgeColor }
+                    ]);
+                    setVisitedNodes(prev => [...prev, { id: neighborId, color: treeEdgeColor }]);
+
+                } else{
+                    setVisitedEdges(prev => prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id && e.color !== treeEdgeColor)));
+                }
+                
+            }
+        }
+
+        setCurrentNode(null);
+        setAlgorithmStarted(false);
+        setText("BFS Done!");
+        setTimeout(resetEdges, 1000); 
+    };
+
+    // Function to start Prim's algorithm
+    const startPrim = () => {
+        if(algorithmRunning || isRemovingEdge){
+            return;
+        }
+        if(isDirected){
+            toggleGraphType();
+        }
+        setRunningAlgorithm("Prim");
+        setIsPrim(true);
+        setAlgorithmRunning(true);
+        setText("Select Node to begin Prim's Algorithm");
+    }
+
+    // Function to animate Prim's algorithm
+    const animatePrimsAlgorithm = async (startNode) => {
+        setAlgorithmStarted(true);
+        setText("Prim's Algorithm in progress...");
+        const visitedNodeSet = new Set();
+        const edgeQueue = [];
+        let stepIndex = 0;
+
+        const addEdges = (node) => {
+            visitedNodeSet.add(node.id);
+            setVisitedNodes(prev => [...prev, { id: node.id, color: treeEdgeColor }]);
+            (adjList[node.id] || []).forEach(neighborId => {
+                if (!visitedNodeSet.has(neighborId)) {
+                    const edge = edges.find(e => 
+                        (e.from.id === node.id && e.to.id === neighborId) ||
+                        (e.from.id === neighborId && e.to.id === node.id)
+                    );
+                    if (edge) {
+                        edgeQueue.push({ ...edge, length: calculateEdgeLength(edge) });
+                    }
+                }
+            });
+            edgeQueue.sort((a, b) => a.length - b.length); 
+        };
+
+        const animateStep = async () => {
+            if (visitedNodeSet.size === nodes.length || edgeQueue.length === 0) {
+                setAlgorithmStarted(false);
+                setText("Prim's Algorithm Done!");
+                setTimeout(resetEdges, 1000);
+                return;
+            }
+
+            const edgesToHighlight = edgeQueue.slice(0, 1); 
+            edgesToHighlight.forEach(edge => {
+                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
+            });
+
+            stepIndex++;
+                    if (isPausedRef.current) {
+                        await new Promise(resolve => {
+                            const checkStep = () => {
+                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                    resolve();
+                                } else {
+                                    setTimeout(checkStep, 50);
+                                }
+                            };
+                            checkStep();
+                        });
+                        if(isStepModeRef.current){
+                            setIsPaused(true);
+                            isPausedRef.current = true;
+                        }
+                    } else {
+                        await sleep(totalSliderCount - sliderValueRef.current);
+                    }
+
+                    if(isStepModeRef.current){
+                        setIsPaused(true);
+                        isPausedRef.current = true;
+                    }
+
+            const edge = edgeQueue.shift();
+            const { from, to } = edge;
+            const fromInMST = visitedNodeSet.has(from.id);
+            const toInMST = visitedNodeSet.has(to.id);
+
+            if ((fromInMST && !toInMST) || (!fromInMST && toInMST)) {
+                setVisitedEdges(prev => [
+                    ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
+                    { ...edge, color: treeEdgeColor }
+                ]);
+
+                if (fromInMST && !toInMST) {
+                    addEdges(to);
+                } else if (!fromInMST && toInMST) {
+                    addEdges(from);
+                }
+            } else {
+                setVisitedEdges(prev => [
+                    ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
+                    { ...edge, color: defaultEdgeColor }
+                ]);
+            }
+
+            animateStep();
+        };
+
+        addEdges(startNode);
+        animateStep();
+    };
+
+    // Function to animate Kruskall's algorithm
+    const animateKruskalsAlgorithm = () => {
+        if (algorithmRunning || isRemovingEdge) {
+            return;
+        }
+        if(isDirected){
+            toggleGraphType();
+        }
+        setRunningAlgorithm("Kruskall");
+        setDisablePause(true);
+        setAlgorithmRunning(true);
+        setText("Kruskall's Algorithm in progress...");
+
+        const sortedEdges = [...edges].sort((a, b) => calculateEdgeLength(a) - calculateEdgeLength(b));
+        let componentIndex = 0;
+        let currentComponentEdges = [];
+        let currentComponentNodes = [];
+        let uf;
+
+        const visitedNodeSet = new Set();
+        const foundComponents = [];
+
+        const dfsComponent = (currentNode, component) => {
+            if (visitedNodeSet.has(currentNode.id)) {
+                return;
+            }
+            visitedNodeSet.add(currentNode.id);
+            component.push(currentNode);
+            adjList[currentNode.id].forEach(neighborId => {
+                const neighborNode = nodes.find(node => node.id === neighborId);
+                if (!visitedNodeSet.has(neighborId)) {
+                    dfsComponent(neighborNode, component);
+                }
+            });
+        };
+
+        nodes.forEach(node => {
+            if (!visitedNodeSet.has(node.id)) {
+                const component = [];
+                dfsComponent(node, component);
+                foundComponents.push(component);
+            }
+        });
+
+        setComponents(foundComponents);
+
+        const animateComponentMST = (component) => {
+            uf = new UnionFind(nodeCount); 
+            currentComponentEdges = [];
+            currentComponentNodes = component.map(node => node.id);
+            let edgeIndex = 0;
+            const color = componentColors[componentIndex % componentColors.length];
+
+            const highlightNodesAndEdges = (index) => {
+                if (index < currentComponentEdges.length) {
+                    const { from, to } = currentComponentEdges[index];
+                    setVisitedNodes(prev => [...prev, { id: from.id, color }, { id: to.id, color }]);
+                    setVisitedEdges(prev => [...prev, currentComponentEdges[index]]);
+                    setTimeout(() => highlightNodesAndEdges(index + 1), totalSliderCount - sliderValueRef.current); 
+                } else {
+                    componentIndex++;
+                    if (componentIndex < foundComponents.length) {
+                        setTimeout(() => animateComponentMST(foundComponents[componentIndex]), 0); 
+                    } else {
+                        setTimeout(resetEdges, 1000);
+                        setText("Kruskall's Algorithm Done!");
+                    }
+                }
+            };
+
+            const animateStep = () => {
+                if (currentComponentEdges.length === component.length - 1 || edgeIndex >= sortedEdges.length) {
+                    highlightNodesAndEdges(0);
+                    return;
+                }
+
+                const edge = sortedEdges[edgeIndex];
+                edgeIndex++;
+
+                if (currentComponentNodes.includes(edge.from.id) && currentComponentNodes.includes(edge.to.id) &&
+                    uf.find(edge.from.id) !== uf.find(edge.to.id)) {
+                    uf.union(edge.from.id, edge.to.id);
+                    currentComponentEdges.push({ ...edge, color });
+                }
+
+                animateStep();
+            };
+
+            animateStep();
+        };
+
+        if (foundComponents.length > 0) {
+            animateComponentMST(foundComponents[0]);
+        } else {
+            console.log("No components found.");
+            setAlgorithmRunning(false);
+        }
+    };
+
+    // Function to start shortest path algorithm
+    const startShortestPath = () => {
+        if(algorithmRunning || isRemovingEdge){
+            return;
+        }
+        setRunningAlgorithm("SP");
+
+        setIsShortestPath(true);
+        setAlgorithmRunning(true);
+        setText("Select Start Node for Shortest Path");
+    }
+
+    // Function to find the shortest path between two nodes
+    const findShortestPath = async (startNode, targetNode) => {
+        setAlgorithmStarted(true);
+        setText("Shortest Path Algorithm in progress...");
+        const dist = {};
+        const prev = {};
+        const visitedEdgeSet = new Set();
+        const visitedNodeSet = new Set();
+        const priorityQueue = new Set(nodes.map(node => node.id)); 
+        let stepIndex = 0;
+
+        nodes.forEach(node => {
+            dist[node.id] = Infinity;
+            prev[node.id] = null;
+        });
+        dist[startNode.id] = 0;
+
+        const getMinDistNode = () => {
+            let minNode = null;
+            priorityQueue.forEach(nodeId => {
+                if (minNode === null || dist[nodeId] < dist[minNode]) {
+                    minNode = nodeId;
+                }
+            });
+            return minNode;
+        };
+
+        while (priorityQueue.size > 0) {
+            const currentNodeId = getMinDistNode();
+            const currentNode = nodes.find(node => node.id === currentNodeId);
+
+            if (dist[currentNodeId] === Infinity) break;
+
+            priorityQueue.delete(currentNodeId);
+
+            if (currentNodeId === targetNode.id) {
+                break;
+            }
+
+            for (let neighborId of adjList[currentNode.id]) {
+                const edge = edges.find(e => 
+                    (isDirected && e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (!isDirected && ((e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (e.from.id === neighborId && e.to.id === currentNode.id)))
+                );
+
+                if(!edge){
+                    continue;
+                }
+
+                setCurrentNode(currentNode);
+                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
+
+                if (!visitedEdgeSet.has(edge)) {
+                    stepIndex++;
+                    if (isPausedRef.current) {
+                        await new Promise(resolve => {
+                            const checkStep = () => {
+                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                    resolve();
+                                } else {
+                                    setTimeout(checkStep, 50);
+                                }
+                            };
+                            checkStep();
+                        });
+                        if(isStepModeRef.current){
+                            setIsPaused(true);
+                            isPausedRef.current = true;
+                        }
+                    } else {
+                        await sleep(totalSliderCount - sliderValueRef.current);
+                    }
+
+                    if(isStepModeRef.current){
+                        setIsPaused(true);
+                        isPausedRef.current = true;
+                    }
+                    visitedEdgeSet.add(edge);
+                }
+
+                const alt = dist[currentNode.id] + calculateEdgeLength(edge);
+
+                if (alt < dist[neighborId]) {
+                    dist[neighborId] = alt;
+                    prev[neighborId] = currentNode.id;
+
+                    setVisitedEdges(prev => [
+                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
+                        { ...edge, color: treeEdgeColor }
+                    ]);
+
+                    visitedEdgeSet.add(edge);
+                } else {
+                    setVisitedEdges(prev => prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id && e.color === currentEdgeColor)));
+                }
+            }
+
+            visitedNodeSet.add(currentNode.id);
+            setVisitedNodes(prev => {
+                const updatedNodes = [...prev, { id: currentNode.id, color: treeEdgeColor }];
+                return updatedNodes;
+            });
+        }
+
+        setStartNode(null);
+        setEndNode(null);
+        setAlgorithmStarted(false);
+        setCurrentNode(null);
+        setText("Shortest Path Done!");
+
+        const path = [];
+
+        let currentNodeId = targetNode.id;
+        while (currentNodeId !== null) {
+            path.unshift(currentNodeId);
+            currentNodeId = prev[currentNodeId];
+        }
+
+        if(path.length === 1){
+            setText("No path Found!");
+            setTimeout(resetEdges, 1000);
+            return;
+        }
+
+        setVisitedEdges(prev => {
+            return prev.map(e => {
+                if (path.includes(e.from.id) && path.includes(e.to.id)) {
+                    return { ...e, color: treeEdgeColor };
+                } else {
+                    return { ...e, color: defaultEdgeColor };
+                }
+            });
+        });
+
+        setVisitedNodes(prev => {
+            return nodes.map(node => {
+                if (path.includes(node.id)) {
+                    return { id: node.id, color: treeEdgeColor };
+                } else {
+                    return { id: node.id, color: "black" };
+                }
+            });
+        });
+
+        setTimeout(resetEdges, 1000);
+    };
+
+    // Function to start TSP
+    const startTSP = async () => {
+        if(algorithmRunning || isRemovingEdge){
+            return;
+        }
+        setRunningAlgorithm("TSP");
+        setIsTSP(true);
+        setAlgorithmRunning(true);
+        setText("Select Node to begin TSP");
+    }
+
+    // Function to animate TSP
+    const tsp = async (node) => {
+        setAlgorithmStarted(true);
+        setText("TSP in progress...");
+        const startNode = node;
+        const unvisited = new Set(nodes.map(node => node.id));
+        const visited = [];
+        const stack = [];
+        let currentNode = startNode;
+        let stepIndex = 0;
+
+        unvisited.delete(currentNode.id);
+        visited.push(currentNode);
+        setVisitedNodes([{ id: currentNode.id, color: treeEdgeColor }]);
+
+        while (unvisited.size > 0) {
+            let nearestNode = null;
+            let shortestDistance = Infinity;
+            let currentEdge = null;
+
+            for (let neighborId of unvisited) {
+                setCurrentNode(currentNode);
+                const neighborNode = nodes.find(node => node.id === neighborId);
+                // eslint-disable-next-line
+                const edge = edges.find(e => 
+                    (isDirected && e && e.from && e.to && e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (!isDirected && e && e.from && e.to && ((e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (e.from.id === neighborId && e.to.id === currentNode.id)))
+                );
+
+                if (!edge) {
+                    continue;
+                }
+                
+                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
+                stepIndex++;
+                if (isPausedRef.current) {
+                    await new Promise(resolve => {
+                        const checkStep = () => {
+                            if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                resolve();
+                            } else {
+                                setTimeout(checkStep, 50);
+                            }
+                        };
+                        checkStep();
+                    });
+                    if(isStepModeRef.current){
+                        setIsPaused(true);
+                        isPausedRef.current = true;
+                    }
+                } else {
+                    await sleep(totalSliderCount - sliderValueRef.current);
+                }
+
+                if(isStepModeRef.current){
+                    setIsPaused(true);
+                    isPausedRef.current = true;
+                }
+                const distance = calculateEdgeLength({ from: currentNode, to: neighborNode });
+                setVisitedEdges(prev => prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)));
+                if (distance < shortestDistance) {
+                    shortestDistance = distance;
+                    nearestNode = neighborNode;
+                    currentEdge = edge;
+                }
+                
+            }
+
+            if (nearestNode && currentEdge) {
+                stack.push({ currentNode, nearestNode, shortestDistance });
+
+                setVisitedEdges(prev => [...prev, { ...currentEdge, color: treeEdgeColor }]);
+                setVisitedNodes(prev => [...prev, { id: nearestNode.id, color: treeEdgeColor }]);
+
+                stepIndex++;
+                    if (isPausedRef.current) {
+                        await new Promise(resolve => {
+                            const checkStep = () => {
+                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                    resolve();
+                                } else {
+                                    setTimeout(checkStep, 50);
+                                }
+                            };
+                            checkStep();
+                        });
+                        if(isStepModeRef.current){
+                            setIsPaused(true);
+                            isPausedRef.current = true;
+                        }
+                    } else {
+                        await sleep(totalSliderCount - sliderValueRef.current);
+                    }
+
+                    if(isStepModeRef.current){
+                        setIsPaused(true);
+                        isPausedRef.current = true;
+                    }
+
+                currentNode = nearestNode;
+                unvisited.delete(currentNode.id);
+                visited.push(currentNode);
+            } else {
+                const previousState = stack.pop();
+                if (previousState) {
+                    currentNode = previousState.currentNode;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        setCurrentNode(null);
+        setAlgorithmStarted(false);
+        setText("TSP Done!");
+        setTimeout(resetEdges, 1000);
+    };
+
+    // Function to color graph
+    const graphColoring = async () => {
+        if(algorithmRunning || isRemovingEdge){
+            return;
+        }
+        setRunningAlgorithm("Color");
+        setDisablePause(true);
+        setAlgorithmRunning(true);
+        setText("Graph Coloring in progress...");
+
+        const availableColors = componentColors;
+        const colors = {};
+
+        const colorGraph = (node) => {
+            const neighborColors = adjList[node.id].map(neighborId => colors[neighborId]);
+            for(let color of availableColors){
+                if(!neighborColors.includes(color)){
+                    colors[node.id] = color;
+                    break;
+                }
+            }
+        }
+
+        for(let node of nodes){
+            colorGraph(node);
+            setVisitedNodes(prev => [...prev, {id: node.id, color: colors[node.id]}]);
+            await new Promise(resolve => setTimeout(resolve, totalSliderCount - sliderValueRef.current));
+        }
+
+        setText("Graph Coloring Done!");
+        setTimeout(resetEdges, 1000);
+    }
+
+    // Function to find connected components in a graph
+    const findConnectedComponents = async () => {
+        console.log("hhihi");
+        setRunningAlgorithm("Connected");
+        setAlgorithmStarted(true);
+        setText("Connected Components in progress...");
+        setAlgorithmRunning(true);
+        const visitedNodeSet = new Set();
+        const visitedEdgeSet = new Set();
+        let componentIndex = 0;
+        let stepIndex = 0;
+
+        const dfsRecursive = async (currentNode, componentColor) => {
+            if (visitedNodeSet.has(currentNode.id)) {
+                return;
+            }
+
+            visitedNodeSet.add(currentNode.id);
+            setVisitedNodes(prev => { 
+                const updatedNodes = [...prev, { id: currentNode.id, color: componentColor }];
+                return updatedNodes;
+            });
+
+            for (let neighborId of adjList[currentNode.id]) {
+                setCurrentNode(currentNode);     
+                const neighborNode = nodes.find(node => node.id === neighborId); 
+                const edge = edges.find(e =>                                     
+                    (e.from.id === currentNode.id && e.to.id === neighborId) ||
+                    (e.from.id === neighborId && e.to.id === currentNode.id)
+                );
+
+                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
+
+                if (!visitedEdgeSet.has(edge)) {
+                    stepIndex++;
+                    if (isPausedRef.current) {
+                        await new Promise(resolve => {
+                            const checkStep = () => {
+                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                    resolve();
+                                } else {
+                                    setTimeout(checkStep, 50);
+                                }
+                            };
+                            checkStep();
+                        });
+                        if(isStepModeRef.current){
+                            setIsPaused(true);
+                            isPausedRef.current = true;
+                        }
+                    } else {
+                        await sleep(totalSliderCount - sliderValueRef.current);
+                    }
+
+                    if(isStepModeRef.current){
+                        setIsPaused(true);
+                        isPausedRef.current = true;
+                    }
+                }
+
+                if (!visitedNodeSet.has(neighborId)) { 
+                    setVisitedEdges(prev => [
+                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
+                        { ...edge, color: componentColor }
+                    ]);
+                    visitedEdgeSet.add(edge);
+
+                    await dfsRecursive(neighborNode, componentColor);
+                } else {
+                    setVisitedEdges(prev => [
+                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
+                        { ...edge, color: componentColor }
+                    ]);
+                }
+            }
+        };
+
+        for (let node of nodes) {
+            if (!visitedNodeSet.has(node.id)) {
+                const componentColor = componentColors[componentIndex % componentColors.length];
+                componentIndex++;
+                await dfsRecursive(node, componentColor);
+            }
+        }
+
+        setCurrentNode(null);
+        setAlgorithmStarted(false);
+        setText("Connected Components Done!");
+        setTimeout(resetEdges, 1000); 
+    };
+
+    // Function to find strong components
+    const findStrongComponents = async () => {
+        setRunningAlgorithm("Connected");
+        setAlgorithmStarted(true);
+        setText("Strong Components in progress...");
+        setAlgorithmRunning(true);
+
+        const stack = [];
+        const visitedNodeSet = new Set();
+        const visitedEdgeSet = new Set();
+        const reverseAdjList = {};
+        let stepIndex = 0;
+
+        const dfs1 = async (node) => {
+            if (visitedNodeSet.has(node.id)) {
+                return;
+            }
+
+            visitedNodeSet.add(node.id);
+            
+            for (let neighborId of adjList[node.id]) {
+                if (!visitedNodeSet.has(neighborId)) {
+                    const neighborNode = nodes.find(n => n.id === neighborId);
+                    await dfs1(neighborNode);
+                }
+            }
+            
+            stack.push(node);
+        };
+
+        const reverseGraph = () => {
+            nodes.forEach(node => {
+                reverseAdjList[node.id] = [];
+            });
+            edges.forEach(edge => {
+                reverseAdjList[edge.to.id].push(edge.from.id);
+            });
+        };
+
+        const dfs2 = async (node, componentColor) => {
+            if (visitedNodeSet.has(node.id)) {
+                return;
+            }
+            
+            visitedNodeSet.add(node.id);
+            setVisitedNodes(prev => { 
+                const updatedNodes = [...prev, { id: node.id, color: componentColor }];
+                return updatedNodes;
+            });
+        
+            for (let neighborId of reverseAdjList[node.id]) {
+                setCurrentNode(node);
+                const neighborNode = nodes.find(n => n.id === neighborId);
+                const edge = edges.find(e => e.from.id === node.id && e.to.id === neighborId);
+                
+                if (!edge) {
+                    continue;
+                }
+        
+                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
+        
+                if (!visitedEdgeSet.has(edge)) {
+                    stepIndex++;
+                    if (isPausedRef.current) {
+                        await new Promise(resolve => {
+                            const checkStep = () => {
+                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                    resolve();
+                                } else {
+                                    setTimeout(checkStep, 50);
+                                }
+                            };
+                            checkStep();
+                        });
+                        if (isStepModeRef.current) {
+                            setIsPaused(true);
+                            isPausedRef.current = true;
+                        }
+                    } else {
+                        await sleep(totalSliderCount - sliderValueRef.current);
+                    }
+        
+                    if (isStepModeRef.current) {
+                        setIsPaused(true);
+                        isPausedRef.current = true;
+                    }
+                }
+                
+                if (!visitedNodeSet.has(neighborId)) { 
+                    setVisitedEdges(prev => [
+                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
+                        { ...edge, color: componentColor }
+                    ]);
+                    visitedEdgeSet.add(edge);
+
+                    await dfs2(neighborNode, componentColor);
+                } else {
+                    setVisitedEdges(prev => [
+                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
+                        { ...edge, color: componentColor }
+                    ]);
+                }
+            }
+        };
+
+        reverseGraph();
+
+        for (let node of nodes) {
+            if (!visitedNodeSet.has(node.id)) {
+                await dfs1(node);
+            }
+        }
+
+        visitedNodeSet.clear();
+        visitedEdgeSet.clear();
+
+        let componentIndex = 0;
+        while (stack.length > 0) {
+            const node = stack.pop();
+            if (!visitedNodeSet.has(node.id)) {
+                const componentColor = componentColors[componentIndex % componentColors.length];
+                componentIndex++;
+                await dfs2(node, componentColor);
+            }
+        }
+
+        setCurrentNode(null);
+        setAlgorithmStarted(false);
+        setText("Strong Components Done!");
+        setTimeout(resetEdges, 1000);
+    };
+    
+    /*
+        Graph (non-button) Function
+    */
 
     // Function to add a new node to the graph
     const addNode = () => {
@@ -205,11 +1249,11 @@ const Graphs = () => {
         setVisitedEdges([]);
         setSelectedNode(null);
         setText(startingText);
-    
+
         const newNodes = [];
         const newEdges = [];
         const newAdjList = {};
-    
+
 
         const gridSize = Math.ceil(Math.sqrt(numNodes));
         const areaWidth = 500; 
@@ -232,7 +1276,7 @@ const Graphs = () => {
             newNodes.push(newNode);
             newAdjList[i] = [];
         }
-    
+
         while (newEdges.length < numEdges) {
             const from = newNodes[Math.floor(Math.random() * numNodes)];
             const to = newNodes[Math.floor(Math.random() * numNodes)];
@@ -251,7 +1295,7 @@ const Graphs = () => {
                 }
             }
         }
-    
+
         setNodes(newNodes);
         setEdges(newEdges);
         setAdjList(newAdjList);
@@ -266,11 +1310,11 @@ const Graphs = () => {
         setNodes([]);
         setEdges([]);
         setClickedMST(false);
-        setClickedTraveral(false);
+        setClickedTraversal(false);
         setIsRemovingEdge(false);
         setText(startingText);
     };
-    
+
     // Function to remove a selected node form the graph
     const removeNode = () => {
         if (selectedNode == null) return;
@@ -427,7 +1471,7 @@ const Graphs = () => {
         if (isRemovingEdge) {
             setEdges(edges.filter(e => e !== edge));
             setIsRemovingEdge(false);
-    
+
             setAdjList(prevAdjList => {
                 const newAdjList = { ...prevAdjList };
                 newAdjList[edge.from.id] = newAdjList[edge.from.id].filter(id => id !== edge.to.id);
@@ -452,944 +1496,13 @@ const Graphs = () => {
             setDragging(false);
         }, 0);
     };
-    
-    // Function to start DFS
-    const startDFS = () => {
-        if(algorithmRunning|| isRemovingEdge){
-            return;
-        }
-        setRunningAlgorithm("DFS");
-        setIsDFS(true);
-        setAlgorithmRunning(true);
-        setText("Select Node to begin DFS");
-    }
-
-    // DFS implementatoin
-    const dfs = async (startNode) => {
-        setAlgorithmStarted(true);
-        setText("DFS in progress...");
-
-        const visitedNodeSet = new Set();
-        const visitedEdgeSet = new Set();
-        let stepIndex = 0;
-    
-        const dfsRecursive = async (currentNode) => {
-            if (visitedNodeSet.has(currentNode.id)) {
-                return;
-            }
-    
-            visitedNodeSet.add(currentNode.id);
-            setVisitedNodes(prev => { 
-                const updatedNodes = [...prev, { id: currentNode.id, color: treeEdgeColor }];
-                return updatedNodes;
-            });
-    
-            for (let neighborId of adjList[currentNode.id]) {
-                setCurrentNode(currentNode);     
-                const neighborNode = nodes.find(node => node.id === neighborId); 
-                const edge = edges.find(e =>                                     
-                    (isDirected && e.from.id === currentNode.id && e.to.id === neighborId) ||
-                    (!isDirected && ((e.from.id === currentNode.id && e.to.id === neighborId) ||
-                    (e.from.id === neighborId && e.to.id === currentNode.id)))
-                );
-
-                if(!edge){
-                    continue;
-                }
-
-                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
-               
-                if (!visitedEdgeSet.has(edge)) {
-                    stepIndex++;
-                    if (isPausedRef.current) {
-                        await new Promise(resolve => {
-                            const checkStep = () => {
-                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                    resolve();
-                                } else {
-                                    setTimeout(checkStep, 50);
-                                }
-                            };
-                            checkStep();
-                        });
-                        if(isStepModeRef.current){
-                            setIsPaused(true);
-                            isPausedRef.current = true;
-                        }
-                    } else {
-                        await sleep(totalSliderCount - sliderValueRef.current);
-                    }
-
-                    if(isStepModeRef.current){
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
-                }
-
-                if (!visitedNodeSet.has(neighborId)) { 
-                    setVisitedEdges(prev => [
-                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
-                        { ...edge, color: treeEdgeColor }
-                    ]);
-                    visitedEdgeSet.add(edge);
-
-                    await dfsRecursive(neighborNode);
-                } else {
-                    setVisitedEdges(prev => prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id && e.color !== treeEdgeColor)));
-                }
-            }
-
-        };
-    
-        await dfsRecursive(startNode);
-        setCurrentNode(null);
-        setAlgorithmStarted(false);
-        setText("DFS Done!");
-        setTimeout(resetEdges, 1000); 
-    };
-
-    // Function to start BFS
-    const startBFS = () => {
-        if(algorithmRunning || isRemovingEdge){
-            return;
-        }
-        setRunningAlgorithm("BFS");
-        setIsBFS(true);
-        setAlgorithmRunning(true);
-        setText("Select Node to begin BFS");
-    }
-
-    // BFS implementation
-    const bfs = async (startNode) => {
-        setAlgorithmStarted(true);
-        setText("BFS in progress...");
-        const visitedNodeSet = new Set();
-        const visitedEdgeSet = new Set();
-        let stepIndex = 0;
-
-    
-        const queue = [startNode];
-        visitedNodeSet.add(startNode.id);
-        setVisitedNodes([{ id: startNode.id, color: treeEdgeColor }]);
-    
-        while (queue.length > 0) {
-            const currentNode = queue.shift();
-            setCurrentNode(currentNode);
-            
-            for (let neighborId of adjList[currentNode.id]) {
-                const neighborNode = nodes.find(node => node.id === neighborId);
-                const edge = edges.find(e =>                                     
-                    (isDirected && e.from.id === currentNode.id && e.to.id === neighborId) ||
-                    (!isDirected && ((e.from.id === currentNode.id && e.to.id === neighborId) ||
-                    (e.from.id === neighborId && e.to.id === currentNode.id)))
-                );
-
-                if(!edge){
-                    continue;
-                }
-    
-                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
-
-                if(!visitedEdgeSet.has(edge)){
-                    stepIndex++;
-                    if (isPausedRef.current) {
-                        await new Promise(resolve => {
-                            const checkStep = () => {
-                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                    resolve();
-                                } else {
-                                    setTimeout(checkStep, 50);
-                                }
-                            };
-                            checkStep();
-                        });
-                        if(isStepModeRef.current){
-                            setIsPaused(true);
-                            isPausedRef.current = true;
-                        }
-                    } else {
-                        await sleep(totalSliderCount - sliderValueRef.current);
-                    }
-
-                    if(isStepModeRef.current){
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
-                }
-
-                if (!visitedNodeSet.has(neighborId)) {
-                    visitedNodeSet.add(neighborId);
-                    queue.push(neighborNode);
-
-                    setVisitedEdges(prev => [
-                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
-                        { ...edge, color: treeEdgeColor }
-                    ]);
-                    setVisitedNodes(prev => [...prev, { id: neighborId, color: treeEdgeColor }]);
-
-                } else{
-                    setVisitedEdges(prev => prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id && e.color !== treeEdgeColor)));
-                }
-                
-            }
-        }
-    
-        setCurrentNode(null);
-        setAlgorithmStarted(false);
-        setText("BFS Done!");
-        setTimeout(resetEdges, 1000); 
-    };
-    
-    // Function to animate Kruskall's algorithm
-    const animateKruskalsAlgorithm = () => {
-        if (algorithmRunning || isRemovingEdge) {
-            return;
-        }
-        setIsDirected(false);
-        setRunningAlgorithm("Kruskall");
-        setDisablePause(true);
-        setAlgorithmRunning(true);
-        setText("Kruskall's Algorithm in progress...");
-    
-        const sortedEdges = [...edges].sort((a, b) => calculateEdgeLength(a) - calculateEdgeLength(b));
-        let componentIndex = 0;
-        let currentComponentEdges = [];
-        let currentComponentNodes = [];
-        let uf;
-    
-        const visitedNodeSet = new Set();
-        const foundComponents = [];
-    
-        const dfsComponent = (currentNode, component) => {
-            if (visitedNodeSet.has(currentNode.id)) {
-                return;
-            }
-            visitedNodeSet.add(currentNode.id);
-            component.push(currentNode);
-            adjList[currentNode.id].forEach(neighborId => {
-                const neighborNode = nodes.find(node => node.id === neighborId);
-                if (!visitedNodeSet.has(neighborId)) {
-                    dfsComponent(neighborNode, component);
-                }
-            });
-        };
-    
-        nodes.forEach(node => {
-            if (!visitedNodeSet.has(node.id)) {
-                const component = [];
-                dfsComponent(node, component);
-                foundComponents.push(component);
-            }
-        });
-    
-        setComponents(foundComponents);
-    
-        const animateComponentMST = (component) => {
-            uf = new UnionFind(nodeCount); 
-            currentComponentEdges = [];
-            currentComponentNodes = component.map(node => node.id);
-            let edgeIndex = 0;
-            const color = componentColors[componentIndex % componentColors.length];
-    
-            const highlightNodesAndEdges = (index) => {
-                if (index < currentComponentEdges.length) {
-                    const { from, to } = currentComponentEdges[index];
-                    setVisitedNodes(prev => [...prev, { id: from.id, color }, { id: to.id, color }]);
-                    setVisitedEdges(prev => [...prev, currentComponentEdges[index]]);
-                    setTimeout(() => highlightNodesAndEdges(index + 1), totalSliderCount - sliderValueRef.current); 
-                } else {
-                    componentIndex++;
-                    if (componentIndex < foundComponents.length) {
-                        setTimeout(() => animateComponentMST(foundComponents[componentIndex]), 0); 
-                    } else {
-                        setTimeout(resetEdges, 1000);
-                        setText("Kruskall's Algorithm Done!");
-                    }
-                }
-            };
-    
-            const animateStep = () => {
-                if (currentComponentEdges.length === component.length - 1 || edgeIndex >= sortedEdges.length) {
-                    highlightNodesAndEdges(0);
-                    return;
-                }
-    
-                const edge = sortedEdges[edgeIndex];
-                edgeIndex++;
-    
-                if (currentComponentNodes.includes(edge.from.id) && currentComponentNodes.includes(edge.to.id) &&
-                    uf.find(edge.from.id) !== uf.find(edge.to.id)) {
-                    uf.union(edge.from.id, edge.to.id);
-                    currentComponentEdges.push({ ...edge, color });
-                }
-    
-                animateStep();
-            };
-    
-            animateStep();
-        };
-    
-        if (foundComponents.length > 0) {
-            animateComponentMST(foundComponents[0]);
-        } else {
-            console.log("No components found.");
-            setAlgorithmRunning(false);
-        }
-    };
-
-     // Union-Find data structure for Kruskal's algorithm
-    class UnionFind {
-        constructor(size) {
-            this.parent = Array(size).fill(null).map((_, index) => index);
-            this.rank = Array(size).fill(0);
-        }
-
-        find(node) {
-            if (this.parent[node] !== node) {
-                this.parent[node] = this.find(this.parent[node]);
-            }
-            return this.parent[node];
-        }
-
-        union(node1, node2) {
-            const root1 = this.find(node1);
-            const root2 = this.find(node2);
-
-            if (root1 !== root2) {
-                if (this.rank[root1] > this.rank[root2]) {
-                    this.parent[root2] = root1;
-                } else if (this.rank[root1] < this.rank[root2]) {
-                    this.parent[root1] = root2;
-                } else {
-                    this.parent[root2] = root1;
-                    this.rank[root1] += 1;
-                }
-            }
-        }
-    }
-
-    // Function to start Prim's algorithm
-    const startPrim = () => {
-        if(algorithmRunning || isRemovingEdge){
-            return;
-        }
-        setRunningAlgorithm("Prim");
-        setIsPrim(true);
-        setAlgorithmRunning(true);
-        setText("Select Node to begin Prim's Algorithm");
-    }
-
-    // Function to animate Prim's algorithm
-    const animatePrimsAlgorithm = async (startNode) => {
-        setAlgorithmStarted(true);
-        setIsDirected(false);
-        setText("Prim's Algorithm in progress...");
-        const visitedNodeSet = new Set();
-        const edgeQueue = [];
-        let stepIndex = 0;
-    
-        const addEdges = (node) => {
-            visitedNodeSet.add(node.id);
-            setVisitedNodes(prev => [...prev, { id: node.id, color: treeEdgeColor }]);
-            (adjList[node.id] || []).forEach(neighborId => {
-                if (!visitedNodeSet.has(neighborId)) {
-                    const edge = edges.find(e => 
-                        (e.from.id === node.id && e.to.id === neighborId) ||
-                        (e.from.id === neighborId && e.to.id === node.id)
-                    );
-                    if (edge) {
-                        edgeQueue.push({ ...edge, length: calculateEdgeLength(edge) });
-                    }
-                }
-            });
-            edgeQueue.sort((a, b) => a.length - b.length); 
-        };
-    
-        const animateStep = async () => {
-            if (visitedNodeSet.size === nodes.length || edgeQueue.length === 0) {
-                setAlgorithmStarted(false);
-                setText("Prim's Algorithm Done!");
-                setTimeout(resetEdges, 1000);
-                return;
-            }
-    
-            const edgesToHighlight = edgeQueue.slice(0, 1); 
-            edgesToHighlight.forEach(edge => {
-                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
-            });
-    
-            stepIndex++;
-                    if (isPausedRef.current) {
-                        await new Promise(resolve => {
-                            const checkStep = () => {
-                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                    resolve();
-                                } else {
-                                    setTimeout(checkStep, 50);
-                                }
-                            };
-                            checkStep();
-                        });
-                        if(isStepModeRef.current){
-                            setIsPaused(true);
-                            isPausedRef.current = true;
-                        }
-                    } else {
-                        await sleep(totalSliderCount - sliderValueRef.current);
-                    }
-
-                    if(isStepModeRef.current){
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
-    
-            const edge = edgeQueue.shift();
-            const { from, to } = edge;
-            const fromInMST = visitedNodeSet.has(from.id);
-            const toInMST = visitedNodeSet.has(to.id);
-    
-            if ((fromInMST && !toInMST) || (!fromInMST && toInMST)) {
-                setVisitedEdges(prev => [
-                    ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
-                    { ...edge, color: treeEdgeColor }
-                ]);
-    
-                if (fromInMST && !toInMST) {
-                    addEdges(to);
-                } else if (!fromInMST && toInMST) {
-                    addEdges(from);
-                }
-            } else {
-                setVisitedEdges(prev => [
-                    ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
-                    { ...edge, color: defaultEdgeColor }
-                ]);
-            }
-    
-            animateStep();
-        };
-    
-        addEdges(startNode);
-        animateStep();
-    };
-    
-    // Function to set traversal mode
-    const setClickTraversal = () => {
-        if(algorithmRunning){
-            return;
-        }
-
-        setClickedTraveral(true);
-    }
-
-    // Function to set MST mode
-    const setClickMST = () => {
-        if(algorithmRunning){
-            return;
-        }
-
-        setClickedMST(true);
-    }
-
-    // Function to set Paths mode
-    const setClickPath = () => {
-        if(algorithmRunning){
-            return;
-        }
-
-        setClickedPaths(true);
-    }
-
-    // Functino to go back from algorithm selection
-    const goBack = () => {
-
-        if(algorithmRunning || isRemovingEdge){
-            return;
-        }
-        
-        setClickedMST(false);
-        setClickedTraveral(false);
-        setClickedPaths(false);
-        setAlgorithmRunning(false);
-        setText(startingText);
-    }
-
-    // Function to find connected components in a graph
-    const findConnectedComponents = async () => {
-        setRunningAlgorithm("Connected");
-        setAlgorithmStarted(true);
-        setText("Connected Components in progress...");
-        setAlgorithmRunning(true);
-        const visitedNodeSet = new Set();
-        const visitedEdgeSet = new Set();
-        let componentIndex = 0;
-        let stepIndex = 0;
-    
-        const dfsRecursive = async (currentNode, componentColor) => {
-            if (visitedNodeSet.has(currentNode.id)) {
-                return;
-            }
-    
-            visitedNodeSet.add(currentNode.id);
-            setVisitedNodes(prev => { 
-                const updatedNodes = [...prev, { id: currentNode.id, color: componentColor }];
-                return updatedNodes;
-            });
-    
-            for (let neighborId of adjList[currentNode.id]) {
-                setCurrentNode(currentNode);     
-                const neighborNode = nodes.find(node => node.id === neighborId); 
-                const edge = edges.find(e =>                                     
-                    (e.from.id === currentNode.id && e.to.id === neighborId) ||
-                    (e.from.id === neighborId && e.to.id === currentNode.id)
-                );
-    
-                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
-    
-                if (!visitedEdgeSet.has(edge)) {
-                    stepIndex++;
-                    if (isPausedRef.current) {
-                        await new Promise(resolve => {
-                            const checkStep = () => {
-                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                    resolve();
-                                } else {
-                                    setTimeout(checkStep, 50);
-                                }
-                            };
-                            checkStep();
-                        });
-                        if(isStepModeRef.current){
-                            setIsPaused(true);
-                            isPausedRef.current = true;
-                        }
-                    } else {
-                        await sleep(totalSliderCount - sliderValueRef.current);
-                    }
-
-                    if(isStepModeRef.current){
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
-                }
-    
-                if (!visitedNodeSet.has(neighborId)) { 
-                    setVisitedEdges(prev => [
-                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
-                        { ...edge, color: componentColor }
-                    ]);
-                    visitedEdgeSet.add(edge);
-    
-                    await dfsRecursive(neighborNode, componentColor);
-                } else {
-                    setVisitedEdges(prev => [
-                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
-                        { ...edge, color: componentColor }
-                    ]);
-                }
-            }
-        };
-    
-        for (let node of nodes) {
-            if (!visitedNodeSet.has(node.id)) {
-                const componentColor = componentColors[componentIndex % componentColors.length];
-                componentIndex++;
-                await dfsRecursive(node, componentColor);
-            }
-        }
-    
-        setCurrentNode(null);
-        setAlgorithmStarted(false);
-        setText("Connected Components Done!");
-        setTimeout(resetEdges, 1000); 
-    };
-    
-    // Function to start shortest path algorithm
-    const startShortestPath = () => {
-        if(algorithmRunning || isRemovingEdge){
-            return;
-        }
-        setRunningAlgorithm("SP");
-
-        setIsShortestPath(true);
-        setAlgorithmRunning(true);
-        setText("Select Start Node for Shortest Path");
-    }
-
-    // Function to find the shortest path between two nodes
-    const findShortestPath = async (startNode, targetNode) => {
-        setAlgorithmStarted(true);
-        setText("Shortest Path Algorithm in progress...");
-        const dist = {};
-        const prev = {};
-        const visitedEdgeSet = new Set();
-        const visitedNodeSet = new Set();
-        const priorityQueue = new Set(nodes.map(node => node.id)); 
-        let stepIndex = 0;
-    
-        nodes.forEach(node => {
-            dist[node.id] = Infinity;
-            prev[node.id] = null;
-        });
-        dist[startNode.id] = 0;
-    
-        const getMinDistNode = () => {
-            let minNode = null;
-            priorityQueue.forEach(nodeId => {
-                if (minNode === null || dist[nodeId] < dist[minNode]) {
-                    minNode = nodeId;
-                }
-            });
-            return minNode;
-        };
-    
-        while (priorityQueue.size > 0) {
-            const currentNodeId = getMinDistNode();
-            const currentNode = nodes.find(node => node.id === currentNodeId);
-    
-            if (dist[currentNodeId] === Infinity) break;
-    
-            priorityQueue.delete(currentNodeId);
-    
-            if (currentNodeId === targetNode.id) {
-                break;
-            }
-    
-            for (let neighborId of adjList[currentNode.id]) {
-                const neighborNode = nodes.find(node => node.id === neighborId);
-                const edge = edges.find(e => 
-                    (isDirected && e.from.id === currentNode.id && e.to.id === neighborId) ||
-                    (!isDirected && ((e.from.id === currentNode.id && e.to.id === neighborId) ||
-                    (e.from.id === neighborId && e.to.id === currentNode.id)))
-                );
-
-                if(!edge){
-                    continue;
-                }
-    
-                setCurrentNode(currentNode);
-                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
-    
-                if (!visitedEdgeSet.has(edge)) {
-                    stepIndex++;
-                    if (isPausedRef.current) {
-                        await new Promise(resolve => {
-                            const checkStep = () => {
-                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                    resolve();
-                                } else {
-                                    setTimeout(checkStep, 50);
-                                }
-                            };
-                            checkStep();
-                        });
-                        if(isStepModeRef.current){
-                            setIsPaused(true);
-                            isPausedRef.current = true;
-                        }
-                    } else {
-                        await sleep(totalSliderCount - sliderValueRef.current);
-                    }
-
-                    if(isStepModeRef.current){
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
-                    visitedEdgeSet.add(edge);
-                }
-    
-                const alt = dist[currentNode.id] + calculateEdgeLength(edge);
-    
-                if (alt < dist[neighborId]) {
-                    dist[neighborId] = alt;
-                    prev[neighborId] = currentNode.id;
-
-                    setVisitedEdges(prev => [
-                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
-                        { ...edge, color: treeEdgeColor }
-                    ]);
-    
-                    visitedEdgeSet.add(edge);
-                } else {
-                    setVisitedEdges(prev => prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id && e.color === currentEdgeColor)));
-                }
-            }
-    
-            visitedNodeSet.add(currentNode.id);
-            setVisitedNodes(prev => {
-                const updatedNodes = [...prev, { id: currentNode.id, color: treeEdgeColor }];
-                return updatedNodes;
-            });
-        }
-    
-        setStartNode(null);
-        setEndNode(null);
-        setAlgorithmStarted(false);
-        setCurrentNode(null);
-        setText("Shortest Path Done!");
-    
-        const path = [];
-
-        let currentNodeId = targetNode.id;
-        while (currentNodeId !== null) {
-            path.unshift(currentNodeId);
-            currentNodeId = prev[currentNodeId];
-        }
-
-        if(path.length === 1){
-            setText("No path Found!");
-            setTimeout(resetEdges, 1000);
-            return;
-        }
-    
-        setVisitedEdges(prev => {
-            return prev.map(e => {
-                if (path.includes(e.from.id) && path.includes(e.to.id)) {
-                    return { ...e, color: treeEdgeColor };
-                } else {
-                    return { ...e, color: defaultEdgeColor };
-                }
-            });
-        });
-
-        setVisitedNodes(prev => {
-            return nodes.map(node => {
-                if (path.includes(node.id)) {
-                    return { id: node.id, color: treeEdgeColor };
-                } else {
-                    return { id: node.id, color: "black" };
-                }
-            });
-        });
-    
-        setTimeout(resetEdges, 1000);
-    };
-
-    // Function to color graph
-    const graphColoring = async () => {
-        if(algorithmRunning || isRemovingEdge){
-            return;
-        }
-        setRunningAlgorithm("Color");
-        setDisablePause(true);
-        setAlgorithmRunning(true);
-        setText("Graph Coloring in progress...");
-
-        const availableColors = componentColors;
-        const colors = {};
-
-        const colorGraph = (node) => {
-            const neighborColors = adjList[node.id].map(neighborId => colors[neighborId]);
-            for(let color of availableColors){
-                if(!neighborColors.includes(color)){
-                    colors[node.id] = color;
-                    break;
-                }
-            }
-        }
-
-        for(let node of nodes){
-            colorGraph(node);
-            setVisitedNodes(prev => [...prev, {id: node.id, color: colors[node.id]}]);
-            await new Promise(resolve => setTimeout(resolve, totalSliderCount - sliderValueRef.current));
-        }
-
-        setText("Graph Coloring Done!");
-        setTimeout(resetEdges, 1000);
-    }
-
-    // Function to start TSP
-    const startTSP = async () => {
-        if(algorithmRunning || isRemovingEdge){
-            return;
-        }
-        setRunningAlgorithm("TSP");
-        setIsTSP(true);
-        setAlgorithmRunning(true);
-        setText("Select Node to begin TSP");
-    }
-
-    // Function to animate TSP
-    const tsp = async (node) => {
-        setAlgorithmStarted(true);
-        setText("TSP in progress...");
-        const startNode = node;
-        const unvisited = new Set(nodes.map(node => node.id));
-        const visited = [];
-        const stack = [];
-        let currentNode = startNode;
-        let stepIndex = 0;
-    
-        unvisited.delete(currentNode.id);
-        visited.push(currentNode);
-        setVisitedNodes([{ id: currentNode.id, color: treeEdgeColor }]);
-    
-        while (unvisited.size > 0) {
-            let nearestNode = null;
-            let shortestDistance = Infinity;
-            let currentEdge = null;
-    
-            for (let neighborId of unvisited) {
-                setCurrentNode(currentNode);
-                const neighborNode = nodes.find(node => node.id === neighborId);
-                // eslint-disable-next-line
-                const edge = edges.find(e => 
-                    (isDirected && e && e.from && e.to && e.from.id === currentNode.id && e.to.id === neighborId) ||
-                    (!isDirected && e && e.from && e.to && ((e.from.id === currentNode.id && e.to.id === neighborId) ||
-                    (e.from.id === neighborId && e.to.id === currentNode.id)))
-                );
-    
-                if (!edge) {
-                    continue;
-                }
-                
-                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
-                stepIndex++;
-                if (isPausedRef.current) {
-                    await new Promise(resolve => {
-                        const checkStep = () => {
-                            if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                resolve();
-                            } else {
-                                setTimeout(checkStep, 50);
-                            }
-                        };
-                        checkStep();
-                    });
-                    if(isStepModeRef.current){
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
-                } else {
-                    await sleep(totalSliderCount - sliderValueRef.current);
-                }
-
-                if(isStepModeRef.current){
-                    setIsPaused(true);
-                    isPausedRef.current = true;
-                }
-                const distance = calculateEdgeLength({ from: currentNode, to: neighborNode });
-                setVisitedEdges(prev => prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)));
-                if (distance < shortestDistance) {
-                    shortestDistance = distance;
-                    nearestNode = neighborNode;
-                    currentEdge = edge;
-                }
-                
-            }
-    
-            if (nearestNode && currentEdge) {
-                stack.push({ currentNode, nearestNode, shortestDistance });
-    
-                setVisitedEdges(prev => [...prev, { ...currentEdge, color: treeEdgeColor }]);
-                setVisitedNodes(prev => [...prev, { id: nearestNode.id, color: treeEdgeColor }]);
-    
-                stepIndex++;
-                    if (isPausedRef.current) {
-                        await new Promise(resolve => {
-                            const checkStep = () => {
-                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                    resolve();
-                                } else {
-                                    setTimeout(checkStep, 50);
-                                }
-                            };
-                            checkStep();
-                        });
-                        if(isStepModeRef.current){
-                            setIsPaused(true);
-                            isPausedRef.current = true;
-                        }
-                    } else {
-                        await sleep(totalSliderCount - sliderValueRef.current);
-                    }
-
-                    if(isStepModeRef.current){
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
-    
-                currentNode = nearestNode;
-                unvisited.delete(currentNode.id);
-                visited.push(currentNode);
-            } else {
-                const previousState = stack.pop();
-                if (previousState) {
-                    currentNode = previousState.currentNode;
-                } else {
-                    break;
-                }
-            }
-        }
-    
-        setCurrentNode(null);
-        setAlgorithmStarted(false);
-        setText("TSP Done!");
-        setTimeout(resetEdges, 1000);
-    };
-
-    // Function to step in the algorithm
-    const nextStep = () => {
-        if(isPausedRef.current){
-            setIsStepMode(true);
-            if(isPausedRef.current){
-                setCurrentStep(prev => {
-                    const next = prev + 1;
-                    currentStepRef.current = next;
-                    return next;
-                });
-            }
-            setIsPaused(false);
-            isPausedRef.current = false;
-        }
-    };
-
-    // Function to toggle button 
-    const togglePlayPause = () => {
-        if (isPausedRef.current) {
-            setIsStepMode(false);
-            setIsPaused(false);
-            isPausedRef.current = false;
-            switch (runningAlgorithm) {
-                case "DFS":
-                    setText("DFS in progress...")
-                    break;
-                case "BFS":
-                    setText("BFS in progress...")
-                    break;
-                case "Kruskall":
-                    setText("Kruskall's Algorithm in progress...")
-                    break;
-                case "Prim":
-                    setText("Prim's Algorithm in progress...")
-                    break;
-                case "SP":
-                    setText("Shortest Path Algorithm in progress...")
-                    break;
-                case "TSP":
-                    setText("TSP in progress...")
-                    break;
-                case "Connected":
-                    setText("Connected Components in progress..")
-                    break;
-                case "Colors":
-                    setText("Graph Coloring in progress...")
-                    break;
-                }
-        } else {
-            setIsStepMode(false);
-            setIsPaused(true);
-            isPausedRef.current = true;
-            setText("Algorithm is Paused");
-        }
-    };
 
     // Function to sleep and check for pausing
     const sleep = (duration) => {
         return new Promise((resolve) => {
             const interval = 50;
             let elapsed = 0;
-    
+
             const checkPauseAndSleep = () => {
                 if (isPausedRef.current) {
                     const checkPause = () => {
@@ -1412,172 +1525,10 @@ const Graphs = () => {
                     }
                 }
             };
-    
+
             checkPauseAndSleep();
         });
     };
-
-    const findStrongComponents = async () => {
-        setRunningAlgorithm("Connected");
-        setAlgorithmStarted(true);
-        setText("Strong Components in progress...");
-        setAlgorithmRunning(true);
-    
-        const stack = [];
-        const visitedNodeSet = new Set();
-        const visitedEdgeSet = new Set();
-        const reverseAdjList = {};
-        let stepIndex = 0;
-    
-        const dfs1 = async (node) => {
-            if (visitedNodeSet.has(node.id)) {
-                return;
-            }
-
-            visitedNodeSet.add(node.id);
-            
-            for (let neighborId of adjList[node.id]) {
-                if (!visitedNodeSet.has(neighborId)) {
-                    const neighborNode = nodes.find(n => n.id === neighborId);
-                    await dfs1(neighborNode);
-                }
-            }
-            
-            stack.push(node);
-        };
-    
-        const reverseGraph = () => {
-            nodes.forEach(node => {
-                reverseAdjList[node.id] = [];
-            });
-            edges.forEach(edge => {
-                reverseAdjList[edge.to.id].push(edge.from.id);
-            });
-        };
-
-        const dfs2 = async (node, componentColor) => {
-            if (visitedNodeSet.has(node.id)) {
-                return;
-            }
-            
-            visitedNodeSet.add(node.id);
-            setVisitedNodes(prev => { 
-                const updatedNodes = [...prev, { id: node.id, color: componentColor }];
-                return updatedNodes;
-            });
-        
-            for (let neighborId of reverseAdjList[node.id]) {
-                setCurrentNode(node);
-                const neighborNode = nodes.find(n => n.id === neighborId);
-                const edge = edges.find(e => e.from.id === node.id && e.to.id === neighborId);
-                
-                if (!edge) {
-                    continue;
-                }
-        
-                setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
-        
-                if (!visitedEdgeSet.has(edge)) {
-                    stepIndex++;
-                    if (isPausedRef.current) {
-                        await new Promise(resolve => {
-                            const checkStep = () => {
-                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                    resolve();
-                                } else {
-                                    setTimeout(checkStep, 50);
-                                }
-                            };
-                            checkStep();
-                        });
-                        if (isStepModeRef.current) {
-                            setIsPaused(true);
-                            isPausedRef.current = true;
-                        }
-                    } else {
-                        await sleep(totalSliderCount - sliderValueRef.current);
-                    }
-        
-                    if (isStepModeRef.current) {
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
-                }
-                
-                if (!visitedNodeSet.has(neighborId)) { 
-                    setVisitedEdges(prev => [
-                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
-                        { ...edge, color: componentColor }
-                    ]);
-                    visitedEdgeSet.add(edge);
-    
-                    await dfs2(neighborNode, componentColor);
-                } else {
-                    setVisitedEdges(prev => [
-                        ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
-                        { ...edge, color: componentColor }
-                    ]);
-                }
-            }
-        };
-    
-        reverseGraph();
-
-        for (let node of nodes) {
-            if (!visitedNodeSet.has(node.id)) {
-                await dfs1(node);
-            }
-        }
-
-        visitedNodeSet.clear();
-        visitedEdgeSet.clear();
-    
-        let componentIndex = 0;
-        while (stack.length > 0) {
-            const node = stack.pop();
-            if (!visitedNodeSet.has(node.id)) {
-                const componentColor = componentColors[componentIndex % componentColors.length];
-                componentIndex++;
-                await dfs2(node, componentColor);
-            }
-        }
-    
-        setCurrentNode(null);
-        setAlgorithmStarted(false);
-        setText("Strong Components Done!");
-        setTimeout(resetEdges, 1000);
-    };
-    
-    // Function to switch between directed and undirected graphs
-    const toggleGraphType = () => {
-        if(algorithmRunning){
-            return;
-        }
-        if (isDirected) {
-            const consolidatedEdges = [];
-            const edgeSet = new Set();
-    
-            edges.forEach(edge => {
-                const edgeKey = `${Math.min(edge.from.id, edge.to.id)}-${Math.max(edge.from.id, edge.to.id)}`;
-                if (!edgeSet.has(edgeKey)) {
-                    edgeSet.add(edgeKey);
-                    consolidatedEdges.push(edge);
-                }
-            });
-    
-            const newAdjList = {};
-            consolidatedEdges.forEach(edge => {
-                if (!newAdjList[edge.from.id]) newAdjList[edge.from.id] = [];
-                if (!newAdjList[edge.to.id]) newAdjList[edge.to.id] = [];
-                newAdjList[edge.from.id].push(edge.to.id);
-                newAdjList[edge.to.id].push(edge.from.id);
-            });
-    
-            setEdges(consolidatedEdges);
-            setAdjList(newAdjList);
-        }
-        setIsDirected(!isDirected);
-    }
 
     // JSX for rendering the component
     return (
@@ -1814,6 +1765,7 @@ const Graphs = () => {
             </div>
         </div>
     );
-};
+    
+}
 
 export default Graphs;
