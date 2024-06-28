@@ -239,7 +239,6 @@ const Graphs = () => {
             if (visitedNodeSet.has(currentNode.id)) {
                 return;
             }
-            console.log(currentNode);
             visitedNodeSet.add(currentNode.id);
             setVisitedNodes(prev => { 
                 const updatedNodes = [...prev, { id: currentNode.id, color: treeEdgeColor }];
@@ -254,8 +253,6 @@ const Graphs = () => {
                     (!isDirected && ((e.from.id === currentNode.id && e.to.id === neighborId) ||
                     (e.from.id === neighborId && e.to.id === currentNode.id)))
                 );
-                console.log(neighborNode);
-                console.log(edge);
 
                 if(!edge){
                     continue;
@@ -605,7 +602,6 @@ const Graphs = () => {
         if (foundComponents.length > 0) {
             animateComponentMST(foundComponents[0]);
         } else {
-            console.log("No components found.");
             setAlgorithmRunning(false);
         }
     };
@@ -935,7 +931,6 @@ const Graphs = () => {
 
     // Function to find connected components in a graph
     const findConnectedComponents = async () => {
-        console.log("hhihi");
         setRunningAlgorithm("Connected");
         setAlgorithmStarted(true);
         setText("Connected Components in progress...");
