@@ -1605,7 +1605,7 @@ const Graphs = () => {
                         <button className="graph-button" onClick={togglePlayPause}>
                             {((isPaused || isStepMode) && !disablePause) ? "Play" : "Pause"}
                         </button>
-                        <button className="graph-button" onClick={stopAlgorithm}>Stop</button>
+                        
                     </>
                 )}
 
