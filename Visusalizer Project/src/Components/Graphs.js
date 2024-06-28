@@ -46,6 +46,8 @@ const Graphs = () => {
     const [runningAlgorithm, setRunningAlgorithm] = useState(null);
     const [isDirected, setIsDirected] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [shouldStop, setShouldStop] = useState(false);
+    const shouldStopRef = useRef(shouldStop);
 
     // Constants for UI text and colors
     const highlightedButtonColor = "lightblue";
@@ -53,6 +55,11 @@ const Graphs = () => {
     const treeEdgeColor = "blue";
     const currentEdgeColor = "red";
     const defaultEdgeColor = "grey";
+
+    // Use Effect to Stop Algorithm
+    useEffect(() => {
+        shouldStopRef.current = shouldStop;
+    }, [shouldStop])
 
     // Use Effect to differentiate between modes
     useEffect(() => {
@@ -79,6 +86,7 @@ const Graphs = () => {
         currentStepRef.current = 0;
         setDisablePause(false);
         setRunningAlgorithm(null);
+        setShouldStop(false);
     };
 
     // Function to set traversal mode
@@ -209,6 +217,14 @@ const Graphs = () => {
             setAdjList(newAdjList);
         }
         setIsDirected(!isDirected);
+    }
+
+    // Function to stop algorithm from running
+    const stopAlgorithm = () => {
+        setShouldStop(true);
+        setIsPaused(false);
+        isPausedRef.current = false;
+        resetEdges();
     }
 
     /*
@@ -1589,6 +1605,7 @@ const Graphs = () => {
                         <button className="graph-button" onClick={togglePlayPause}>
                             {((isPaused || isStepMode) && !disablePause) ? "Play" : "Pause"}
                         </button>
+                        <button className="graph-button" onClick={stopAlgorithm}>Stop</button>
                     </>
                 )}
 

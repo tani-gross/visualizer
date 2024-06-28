@@ -26,7 +26,7 @@ const GraphModal = ({ show, onClose, onGenerateGraph }) => {
                             value={nodeCount} 
                             onChange={(e) => setNodeCount(parseInt(e.target.value))} 
                             min="1" max="20" required 
-                            style={{ width: '50px' }}
+                            style={{ width: '50px'}}
                         />
                     </label>
                     <br />
