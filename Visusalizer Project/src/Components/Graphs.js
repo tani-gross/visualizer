@@ -263,6 +263,7 @@ const Graphs = () => {
                 if (!visitedEdgeSet.has(edge)) {
                     stepIndex++;
                     if (isPausedRef.current) {
+                        // eslint-disable-next-line
                         await new Promise(resolve => {
                             const checkStep = () => {
                                 if (!isPausedRef.current || currentStepRef.current > stepIndex) {
@@ -354,6 +355,7 @@ const Graphs = () => {
                 if(!visitedEdgeSet.has(edge)){
                     stepIndex++;
                     if (isPausedRef.current) {
+                        // eslint-disable-next-line
                         await new Promise(resolve => {
                             const checkStep = () => {
                                 if (!isPausedRef.current || currentStepRef.current > stepIndex) {
@@ -674,6 +676,7 @@ const Graphs = () => {
                 if (!visitedEdgeSet.has(edge)) {
                     stepIndex++;
                     if (isPausedRef.current) {
+                        // eslint-disable-next-line
                         await new Promise(resolve => {
                             const checkStep = () => {
                                 if (!isPausedRef.current || currentStepRef.current > stepIndex) {
@@ -814,6 +817,7 @@ const Graphs = () => {
                 setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
                 stepIndex++;
                 if (isPausedRef.current) {
+                    // eslint-disable-next-line
                     await new Promise(resolve => {
                         const checkStep = () => {
                             if (!isPausedRef.current || currentStepRef.current > stepIndex) {
@@ -854,6 +858,7 @@ const Graphs = () => {
 
                 stepIndex++;
                     if (isPausedRef.current) {
+                        // eslint-disable-next-line
                         await new Promise(resolve => {
                             const checkStep = () => {
                                 if (!isPausedRef.current || currentStepRef.current > stepIndex) {
@@ -966,6 +971,7 @@ const Graphs = () => {
                 if (!visitedEdgeSet.has(edge)) {
                     stepIndex++;
                     if (isPausedRef.current) {
+                        // eslint-disable-next-line
                         await new Promise(resolve => {
                             const checkStep = () => {
                                 if (!isPausedRef.current || currentStepRef.current > stepIndex) {
@@ -1115,6 +1121,7 @@ const Graphs = () => {
                 if (!visitedEdgeSet.has(edge)) {
                     stepIndex++;
                     if (isPausedRef.current) {
+                        // eslint-disable-next-line
                         await new Promise(resolve => {
                             const checkStep = () => {
                                 if (!isPausedRef.current || currentStepRef.current > stepIndex) {
