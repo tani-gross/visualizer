@@ -2,6 +2,7 @@ import React, {useEffect, useState, useRef } from 'react';
 import Draggable from 'react-draggable';
 import {calculateAngle, calculateEdgeLength, calculateMidpoint} from './GraphUtilities';
 import UnionFind from "./UnionFind"
+import GraphModal from './GraphModal';
 
 
 const Graphs = () => {
@@ -44,6 +45,7 @@ const Graphs = () => {
     const [algorithmStarted, setAlgorithmStarted] = useState(false);
     const [runningAlgorithm, setRunningAlgorithm] = useState(null);
     const [isDirected, setIsDirected] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Constants for UI text and colors
     const highlightedButtonColor = "lightblue";
@@ -1180,66 +1182,16 @@ const Graphs = () => {
         setNodeCount(nodeCount + 1);
     };
 
-    // Function to generate a random graph
-    const generateGraph = () => {
+    const handleGenerateGraph =  (numNodes, numEdges, isDirected) => {
         if(algorithmRunning || isRemovingEdge){
             return;
         }
+        generateGraph(numNodes, numEdges, isDirected);
+    }  
 
-        var numNodes = 0;
-        var numEdges = -1;
-
-        do{
-            const response = prompt("Enter the number of nodes for the graph:", "");
-            if(response === null){
-                return;
-            }
-            if(isNaN(response)){
-                alert("Invalid input. Please enter numbers only");
-                continue;
-            }
-
-            if(response <= 0 || response > 20){
-                alert("Invalid input. Number of nodes must be between 1 and 20");
-                continue;
-            }
-
-            numNodes = response;
-
-        }while(numNodes === 0);
-
-        do{
-            const response = prompt("Enter the number of edges for the graph:", "");
-            if(response === null){
-                return;
-            }
-
-            if(isNaN(response)){
-                alert("Invalid input. Please enter numbers only");
-                continue;
-            }
-
-            if(!isDirected){
-                if(response > ((numNodes * (numNodes - 1)) / 2)){
-                    alert("Invalid input. Too many edges for the undirected graph");
-                    continue;
-                }
-            }else{
-                if(response > ((numNodes * (numNodes - 1)))){
-                    alert("Invalid input. Too many edges for the directed graph");
-                    continue;
-                }
-            }
-            
-            if(response < 0){
-                alert("Invalid input. Not enough edges");
-                continue;
-            }
-
-            numEdges = response;
-
-        }while(numEdges === -1);
-
+    // Function to generate a random graph
+    const generateGraph = (numNodes, numEdges, isDirected) => {
+        setIsDirected(isDirected);
         setNodes([]);
         setEdges([]);
         setAdjList({});
@@ -1532,6 +1484,11 @@ const Graphs = () => {
     // JSX for rendering the component
     return (
         <div className="main-container">
+            <GraphModal 
+                    show={isModalOpen} 
+                    onClose={() => setIsModalOpen(false)} 
+                    onGenerateGraph={handleGenerateGraph} 
+                />
             <div className="button-container">
                 <h3>Graph Creation</h3>
 
@@ -1545,14 +1502,14 @@ const Graphs = () => {
                 {!selectedNode && (
                 <button className="graph-button" onClick={addNode}>Add Node</button>)}
                 {!selectedNode && (
-                <button className="graph-button" onClick={generateGraph}>Generate Graph</button>)}
+                <button className="graph-button" onClick={() => setIsModalOpen(true)}>Generate Graph</button>)}
                 {!selectedNode && nodes.length > 0 && (
                 <button className="graph-button" onClick={resetGraph}>Reset Graph</button>)}
 
                 {/* Edge Editing */}
-                {!selectedNode && (
+                {!selectedNode && edges.length > 0 && (
                     <h3>Edge Editing</h3>)}
-                {!selectedNode && (
+               {!selectedNode && edges.length > 0 && (
                     <button className="graph-button" onClick={toggleGraphType}>
                         {isDirected ? 'Set Undirected' : 'Set Directed'}
                     </button>)}
@@ -1577,6 +1534,7 @@ const Graphs = () => {
             </div>
                 
             <div className="graph-content">
+                
                 <div className="slider-container">
                     <h4 className="slider-label">Algorithm Speed</h4>
                     <div className="slider-content">
@@ -1593,6 +1551,7 @@ const Graphs = () => {
                     </div>
                 </div>
                 <div className="graph-box">
+                    
                 <svg className="edges-svg" style={{ position: 'absolute', width: '100%', height: '100%' }}>
                     {edges.map((edge, index) => {
                         const midpoint = calculateMidpoint(edge);
