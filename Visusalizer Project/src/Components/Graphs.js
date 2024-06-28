@@ -215,7 +215,7 @@ const Graphs = () => {
         Algorithms
     */
 
-        // Function to start DFS
+    // Function to start DFS
     const startDFS = () => {
         if(algorithmRunning|| isRemovingEdge){
             return;
@@ -230,6 +230,9 @@ const Graphs = () => {
     const dfs = async (startNode) => {
         setAlgorithmStarted(true);
         setText("DFS in progress...");
+        if(isPausedRef.current){
+            setText("Algorithm is Paused");
+        }
 
         const visitedNodeSet = new Set();
         const visitedEdgeSet = new Set();
@@ -325,6 +328,9 @@ const Graphs = () => {
     const bfs = async (startNode) => {
         setAlgorithmStarted(true);
         setText("BFS in progress...");
+        if(isPausedRef.current){
+            setText("Algorithm is Paused");
+        }
         const visitedNodeSet = new Set();
         const visitedEdgeSet = new Set();
         let stepIndex = 0;
@@ -421,6 +427,9 @@ const Graphs = () => {
     const animatePrimsAlgorithm = async (startNode) => {
         setAlgorithmStarted(true);
         setText("Prim's Algorithm in progress...");
+        if(isPausedRef.current){
+            setText("Algorithm is Paused");
+        }
         const visitedNodeSet = new Set();
         const edgeQueue = [];
         let stepIndex = 0;
@@ -624,6 +633,9 @@ const Graphs = () => {
     const findShortestPath = async (startNode, targetNode) => {
         setAlgorithmStarted(true);
         setText("Shortest Path Algorithm in progress...");
+        if(isPausedRef.current){
+            setText("Algorithm is Paused");
+        }
         const dist = {};
         const prev = {};
         const visitedEdgeSet = new Set();
@@ -784,6 +796,9 @@ const Graphs = () => {
     const tsp = async (node) => {
         setAlgorithmStarted(true);
         setText("TSP in progress...");
+        if(isPausedRef.current){
+            setText("Algorithm is Paused");
+        }
         const startNode = node;
         const unvisited = new Set(nodes.map(node => node.id));
         const visited = [];
@@ -939,6 +954,9 @@ const Graphs = () => {
         setRunningAlgorithm("Connected");
         setAlgorithmStarted(true);
         setText("Connected Components in progress...");
+        if(isPausedRef.current){
+            setText("Algorithm is Paused");
+        }
         setAlgorithmRunning(true);
         const visitedNodeSet = new Set();
         const visitedEdgeSet = new Set();
@@ -1060,6 +1078,9 @@ const Graphs = () => {
         setRunningAlgorithm("Connected");
         setAlgorithmStarted(true);
         setText("Strong Components in progress...");
+        if(isPausedRef.current){
+            setText("Algorithm is Paused");
+        }
         setAlgorithmRunning(true);
     
         const stack = [];
@@ -1585,11 +1606,14 @@ const Graphs = () => {
                 {algorithmStarted && !disablePause && (
                     <>
                         <h3>Control</h3>
-                        <button className="graph-button" onClick={nextStep}>Next Step</button>
                         <button className="graph-button" onClick={togglePlayPause}>
                             {((isPaused || isStepMode) && !disablePause) ? "Play" : "Pause"}
                         </button>
                     </>
+                )}
+
+                {isPausedRef.current && algorithmStarted && !disablePause && (
+                    <button className="graph-button" onClick={nextStep}>Next Step</button>
                 )}
 
             </div>
