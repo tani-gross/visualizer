@@ -211,14 +211,6 @@ const Graphs = () => {
         setIsDirected(!isDirected);
     }
 
-    // Function to stop algorithm from running
-    /*const stopAlgorithm = () => {
-        setShouldStop(true);
-        setIsPaused(false);
-        isPausedRef.current = false;
-        resetEdges();
-    }*/
-
     /*
         Algorithms
     */
@@ -1597,7 +1589,6 @@ const Graphs = () => {
                         <button className="graph-button" onClick={togglePlayPause}>
                             {((isPaused || isStepMode) && !disablePause) ? "Play" : "Pause"}
                         </button>
-                        
                     </>
                 )}
 
