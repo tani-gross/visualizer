@@ -951,7 +951,9 @@ const Graphs = () => {
                 return updatedNodes;
             });
 
+            let iterations = 0;
             for (let neighborId of adjList[currentNode.id]) {
+                iterations++;
                 setCurrentNode(currentNode);     
                 const neighborNode = nodes.find(node => node.id === neighborId); 
                 const edge = edges.find(e =>                                     
@@ -1001,6 +1003,34 @@ const Graphs = () => {
                         ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
                         { ...edge, color: componentColor }
                     ]);
+                }
+            }
+
+            if(iterations === 0){ //EXTRA SLEEP
+                setCurrentNode(null);
+                stepIndex++;
+                if (isPausedRef.current) {
+                    await new Promise(resolve => {
+                        const checkStep = () => {
+                            if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                resolve();
+                            } else {
+                                setTimeout(checkStep, 50);
+                            }
+                        };
+                        checkStep();
+                    });
+                    if(isStepModeRef.current){
+                        setIsPaused(true);
+                        isPausedRef.current = true;
+                    }
+                } else {
+                    await sleep(totalSliderCount - sliderValueRef.current);
+                }
+
+                if(isStepModeRef.current){
+                    setIsPaused(true);
+                    isPausedRef.current = true;
                 }
             }
         };
@@ -1069,7 +1099,9 @@ const Graphs = () => {
                 return updatedNodes;
             });
         
+            let iterations = 0;
             for (let neighborId of adjList[node.id]) {
+                iterations++;
                 setCurrentNode(node);
                 const neighborNode = nodes.find(n => n.id === neighborId);
                 const edge = edges.find(e => e.from.id === node.id && e.to.id === neighborId);
@@ -1120,6 +1152,33 @@ const Graphs = () => {
                         ...prev.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id)),
                         { ...edge, color: componentColor }
                     ]);
+                }
+            }
+            if(iterations === 0){ //EXTRA SLEEP
+                setCurrentNode(null);
+                stepIndex++;
+                if (isPausedRef.current) {
+                    await new Promise(resolve => {
+                        const checkStep = () => {
+                            if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                                resolve();
+                            } else {
+                                setTimeout(checkStep, 50);
+                            }
+                        };
+                        checkStep();
+                    });
+                    if(isStepModeRef.current){
+                        setIsPaused(true);
+                        isPausedRef.current = true;
+                    }
+                } else {
+                    await sleep(totalSliderCount - sliderValueRef.current);
+                }
+
+                if(isStepModeRef.current){
+                    setIsPaused(true);
+                    isPausedRef.current = true;
                 }
             }
         };
