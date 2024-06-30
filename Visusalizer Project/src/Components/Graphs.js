@@ -215,6 +215,34 @@ const Graphs = () => {
         Algorithms
     */
 
+    // Function to help with play / pause during sleep
+    const helper = async (stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef) => {
+        if (isPausedRef.current) {
+            // eslint-disable-next-line
+            await new Promise(resolve => {
+                const checkStep = () => {
+                    if (!isPausedRef.current || currentStepRef.current > stepIndex) {
+                        resolve();
+                    } else {
+                        setTimeout(checkStep, 50);
+                    }
+                };
+                checkStep();
+            });
+            if(isStepModeRef.current){
+                setIsPaused(true);
+                isPausedRef.current = true;
+            }
+        } else {
+            await sleep(totalSliderCount - sliderValueRef.current);
+        }
+
+        if(isStepModeRef.current){
+            setIsPaused(true);
+            isPausedRef.current = true;
+        }
+    }
+
     // Function to start DFS
     const startDFS = () => {
         if(algorithmRunning|| isRemovingEdge){
@@ -265,30 +293,7 @@ const Graphs = () => {
             
                 if (!visitedEdgeSet.has(edge)) {
                     stepIndex++;
-                    if (isPausedRef.current) {
-                        // eslint-disable-next-line
-                        await new Promise(resolve => {
-                            const checkStep = () => {
-                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                    resolve();
-                                } else {
-                                    setTimeout(checkStep, 50);
-                                }
-                            };
-                            checkStep();
-                        });
-                        if(isStepModeRef.current){
-                            setIsPaused(true);
-                            isPausedRef.current = true;
-                        }
-                    } else {
-                        await sleep(totalSliderCount - sliderValueRef.current);
-                    }
-
-                    if(isStepModeRef.current){
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
+                    await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
                 }
 
                 if (!visitedNodeSet.has(neighborId)) { 
@@ -360,30 +365,7 @@ const Graphs = () => {
 
                 if(!visitedEdgeSet.has(edge)){
                     stepIndex++;
-                    if (isPausedRef.current) {
-                        // eslint-disable-next-line
-                        await new Promise(resolve => {
-                            const checkStep = () => {
-                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                    resolve();
-                                } else {
-                                    setTimeout(checkStep, 50);
-                                }
-                            };
-                            checkStep();
-                        });
-                        if(isStepModeRef.current){
-                            setIsPaused(true);
-                            isPausedRef.current = true;
-                        }
-                    } else {
-                        await sleep(totalSliderCount - sliderValueRef.current);
-                    }
-
-                    if(isStepModeRef.current){
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
+                    await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
                 }
 
                 if (!visitedNodeSet.has(neighborId)) {
@@ -465,29 +447,7 @@ const Graphs = () => {
             });
 
             stepIndex++;
-                    if (isPausedRef.current) {
-                        await new Promise(resolve => {
-                            const checkStep = () => {
-                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                    resolve();
-                                } else {
-                                    setTimeout(checkStep, 50);
-                                }
-                            };
-                            checkStep();
-                        });
-                        if(isStepModeRef.current){
-                            setIsPaused(true);
-                            isPausedRef.current = true;
-                        }
-                    } else {
-                        await sleep(totalSliderCount - sliderValueRef.current);
-                    }
-
-                    if(isStepModeRef.current){
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
+            await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
 
             const edge = edgeQueue.shift();
             const { from, to } = edge;
@@ -687,31 +647,7 @@ const Graphs = () => {
 
                 if (!visitedEdgeSet.has(edge)) {
                     stepIndex++;
-                    if (isPausedRef.current) {
-                        // eslint-disable-next-line
-                        await new Promise(resolve => {
-                            const checkStep = () => {
-                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                    resolve();
-                                } else {
-                                    setTimeout(checkStep, 50);
-                                }
-                            };
-                            checkStep();
-                        });
-                        if(isStepModeRef.current){
-                            setIsPaused(true);
-                            isPausedRef.current = true;
-                        }
-                    } else {
-                        await sleep(totalSliderCount - sliderValueRef.current);
-                    }
-
-                    if(isStepModeRef.current){
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
-                    visitedEdgeSet.add(edge);
+                    await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
                 }
 
                 const alt = dist[currentNode.id] + calculateEdgeLength(edge);
@@ -831,25 +767,7 @@ const Graphs = () => {
                 
                 setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
                 stepIndex++;
-                if (isPausedRef.current) {
-                    // eslint-disable-next-line
-                    await new Promise(resolve => {
-                        const checkStep = () => {
-                            if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                resolve();
-                            } else {
-                                setTimeout(checkStep, 50);
-                            }
-                        };
-                        checkStep();
-                    });
-                    if(isStepModeRef.current){
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
-                } else {
-                    await sleep(totalSliderCount - sliderValueRef.current);
-                }
+                await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
 
                 if(isStepModeRef.current){
                     setIsPaused(true);
@@ -872,30 +790,7 @@ const Graphs = () => {
                 setVisitedNodes(prev => [...prev, { id: nearestNode.id, color: treeEdgeColor }]);
 
                 stepIndex++;
-                    if (isPausedRef.current) {
-                        // eslint-disable-next-line
-                        await new Promise(resolve => {
-                            const checkStep = () => {
-                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                    resolve();
-                                } else {
-                                    setTimeout(checkStep, 50);
-                                }
-                            };
-                            checkStep();
-                        });
-                        if(isStepModeRef.current){
-                            setIsPaused(true);
-                            isPausedRef.current = true;
-                        }
-                    } else {
-                        await sleep(totalSliderCount - sliderValueRef.current);
-                    }
-
-                    if(isStepModeRef.current){
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
+                await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
 
                 currentNode = nearestNode;
                 unvisited.delete(currentNode.id);
@@ -988,30 +883,7 @@ const Graphs = () => {
 
                 if (!visitedEdgeSet.has(edge)) {
                     stepIndex++;
-                    if (isPausedRef.current) {
-                        // eslint-disable-next-line
-                        await new Promise(resolve => {
-                            const checkStep = () => {
-                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                    resolve();
-                                } else {
-                                    setTimeout(checkStep, 50);
-                                }
-                            };
-                            checkStep();
-                        });
-                        if(isStepModeRef.current){
-                            setIsPaused(true);
-                            isPausedRef.current = true;
-                        }
-                    } else {
-                        await sleep(totalSliderCount - sliderValueRef.current);
-                    }
-
-                    if(isStepModeRef.current){
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
+                    await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
                 }
 
                 if (!visitedNodeSet.has(neighborId)) { 
@@ -1033,29 +905,7 @@ const Graphs = () => {
             if(iterations === 0){ //EXTRA SLEEP
                 setCurrentNode(null);
                 stepIndex++;
-                if (isPausedRef.current) {
-                    await new Promise(resolve => {
-                        const checkStep = () => {
-                            if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                resolve();
-                            } else {
-                                setTimeout(checkStep, 50);
-                            }
-                        };
-                        checkStep();
-                    });
-                    if(isStepModeRef.current){
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
-                } else {
-                    await sleep(totalSliderCount - sliderValueRef.current);
-                }
-
-                if(isStepModeRef.current){
-                    setIsPaused(true);
-                    isPausedRef.current = true;
-                }
+                await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
             }
         };
 
@@ -1141,30 +991,7 @@ const Graphs = () => {
         
                 if (!visitedEdgeSet.has(edge)) {
                     stepIndex++;
-                    if (isPausedRef.current) {
-                        // eslint-disable-next-line
-                        await new Promise(resolve => {
-                            const checkStep = () => {
-                                if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                    resolve();
-                                } else {
-                                    setTimeout(checkStep, 50);
-                                }
-                            };
-                            checkStep();
-                        });
-                        if (isStepModeRef.current) {
-                            setIsPaused(true);
-                            isPausedRef.current = true;
-                        }
-                    } else {
-                        await sleep(totalSliderCount - sliderValueRef.current);
-                    }
-        
-                    if (isStepModeRef.current) {
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
+                    await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
                 }
                 
                 if (!visitedNodeSet.has(neighborId)) { 
@@ -1185,29 +1012,7 @@ const Graphs = () => {
             if(iterations === 0){ //EXTRA SLEEP
                 setCurrentNode(null);
                 stepIndex++;
-                if (isPausedRef.current) {
-                    await new Promise(resolve => {
-                        const checkStep = () => {
-                            if (!isPausedRef.current || currentStepRef.current > stepIndex) {
-                                resolve();
-                            } else {
-                                setTimeout(checkStep, 50);
-                            }
-                        };
-                        checkStep();
-                    });
-                    if(isStepModeRef.current){
-                        setIsPaused(true);
-                        isPausedRef.current = true;
-                    }
-                } else {
-                    await sleep(totalSliderCount - sliderValueRef.current);
-                }
-
-                if(isStepModeRef.current){
-                    setIsPaused(true);
-                    isPausedRef.current = true;
-                }
+                await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
             }
         };
     
