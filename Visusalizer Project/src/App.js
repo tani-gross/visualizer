@@ -3,6 +3,7 @@ import Home from './Components/Home';
 import Sorting from './Components/Sorting';
 import Graphs from './Components/Graphs';
 import BottomBar from './Components/BottomBar';
+import { GraphProvider } from './Components/Helper Functions/GraphContext';
 
 import {BrowserRouter , Route, Routes} from 'react-router-dom';
 
@@ -16,7 +17,13 @@ function App() {
           <Routes>
             <Route path = "/" element={<Home />} />
             <Route path = "/sorting" element={<Sorting />} />
-            <Route path = "/graphs" element={<Graphs />} />
+            <Route 
+              path = "/graphs" 
+              element={
+                <GraphProvider>
+                  <Graphs />
+                </GraphProvider>
+              } />
           </Routes>
         </div>
         <BottomBar />
