@@ -58,7 +58,8 @@ export const useGraphAlgorithms = () => {
                     };
                     checkPause();
                 } else {
-                    if (elapsed < duration) {
+                    const dynamicDuration = totalSliderCount - sliderValueRef.current;
+                    if (elapsed < dynamicDuration) {
                         elapsed += interval;
                         setTimeout(checkPauseAndSleep, interval);
                     } else {
