@@ -381,7 +381,7 @@ const Graphs = () => {
                     </>
                 )}
 
-                {algorithmRunning && !algorithmStarted && !disablePause && (
+                {algorithmRunning && !algorithmStarted && !text.includes("Done") && (
                     <>
                         <h3>Control</h3>
                         <button className="graph-button" onClick={cancelAlgorithm}>Cancel</button>
