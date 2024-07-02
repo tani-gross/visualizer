@@ -45,6 +45,7 @@ export const GraphProvider = ({ children }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAlerting, setIsAlerting] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
+    const [availableNodes, setAvailableNodes] = useState([]);
     const highlightedButtonColor = "lightblue";
     const startingText = "Move Node, Select Node, or Press Button to Continue";
     const treeEdgeColor = "blue";
@@ -136,7 +137,9 @@ export const GraphProvider = ({ children }) => {
                 isAlerting,
                 setIsAlerting,
                 modalMessage,
-                setModalMessage
+                setModalMessage,
+                availableNodes,
+                setAvailableNodes
             }}
         >
             {children}

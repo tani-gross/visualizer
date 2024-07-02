@@ -48,7 +48,9 @@ export const useInternalGraphFunctions = () => {
         setSliderValue,
         setIsModalOpen,
         setModalMessage,
-        setIsAlerting
+        setIsAlerting,
+        setAvailableNodes,
+        setCurrentNode
     } = useGraph();
 
     // Function to add a new node to the graph
@@ -180,8 +182,7 @@ export const useInternalGraphFunctions = () => {
         if (dragging) {
             return;
         }
-
-        if (isAddingEdge) {
+        if (isAddingEdge) {      
             if (selectedNode && selectedNode.id !== node.id) {
                 const edgeExists = edges.some(edge =>
                     (edge.from.id === selectedNode.id && edge.to.id === node.id) ||
@@ -202,15 +203,16 @@ export const useInternalGraphFunctions = () => {
                         }
                         return newAdjList;
                     })
+                    
                 }
                 
-                setIsAddingEdge(false);
-                setSelectedNode(null);
-            } else if (selectedNode && selectedNode.id === node.id) {
-                setSelectedNode(null);
-                setIsAddingEdge(false);
             }
+            setCurrentNode(null);
             setText(startingText);
+            setSelectedNode(null);
+            setIsAddingEdge(false);
+            setAvailableNodes([]);
+            
         } else if(isDFS){
             setVisitedNodes([]);
             setVisitedEdges([]);
@@ -306,8 +308,23 @@ export const useInternalGraphFunctions = () => {
             return;
         }
 
+        
+
+        const availableNodes = nodes.filter(node => 
+            !edges.some(edge => 
+                (edge.from.id === selectedNode.id && edge.to.id === node.id) ||
+                (!isDirected && edge.from.id === node.id && edge.to.id === selectedNode.id)
+            ) && node.id !== selectedNode.id
+        ).map(node => node.id);
+
+        if(availableNodes.length === 0){
+            return;
+        }
+
         setIsAddingEdge(true);
         setText("Click another node to add edge");
+        setCurrentNode(selectedNode);
+        setAvailableNodes(availableNodes);
     };
 
     // Function to handle clicking on an edge

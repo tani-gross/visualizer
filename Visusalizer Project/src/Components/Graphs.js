@@ -67,7 +67,9 @@ const Graphs = () => {
         isAlerting,
         modalMessage,
         setStartNode,
-        setEndNode
+        setEndNode,
+        availableNodes,
+        isAddingEdge
     } = useGraph();
 
     const {animateKruskalsAlgorithm, graphColoring, findConnectedComponents, findStrongComponents, resetEdges} = useGraphAlgorithms();
@@ -470,32 +472,35 @@ const Graphs = () => {
                         );
                     })}
                 </svg>
-                    {nodes.map(node => (
-                        <Draggable
-                            key={node.id}
-                            position={{ x: node.x, y: node.y }}
-                            bounds="parent"
-                            onStart={handleMouseDown}
-                            onDrag={(e, data) => handleDrag(e, data, node)}
-                            onStop={handleDragStop}
+                {nodes.map(node => (
+                    <Draggable
+                        key={node.id}
+                        position={{ x: node.x, y: node.y }}
+                        bounds="parent"
+                        onStart={handleMouseDown}
+                        onDrag={(e, data) => handleDrag(e, data, node)}
+                        onStop={handleDragStop}
+                    >
+                        <div
+                            className="graph-node"
+                            onClick={() => handleNodeClick(node)}
+                            style={{
+                                border: (isTSP || isBFS || isPrim || isDFS || isShortestPath) ? 
+                                    (startNode && startNode.id === node.id ? 'none' : '2px solid red') : 
+                                    (selectedNode && selectedNode.id === node.id ? '2px solid red' : 
+                                    (isAddingEdge && availableNodes.includes(node.id) && selectedNode.id !== node.id ? '2px solid red' : 'none')),
+                                backgroundColor: 
+                                node.id === currentNode?.id ? 'red' : 
+                                visitedNodes.some(vn => vn.id === node.id) ? 
+                                    (visitedNodes.find(vn => vn.id === node.id)?.color || componentColors[components.findIndex(comp => comp.some(n => n.id === node.id)) % componentColors.length] || "blue") 
+                                    : 'black',
+                                pointerEvents: 'auto',
+                                position: 'absolute'
+                            }}
                         >
-                            <div
-                                className="graph-node"
-                                onClick={() => handleNodeClick(node)}
-                                style={{
-                                    border: (isTSP || isBFS || isPrim || isDFS || isShortestPath) ? (startNode && startNode.id === node.id ? 'none' : '2px solid red') : (selectedNode && selectedNode.id === node.id ? '2px solid red' : 'none'),
-                                    backgroundColor: 
-                                    node.id === currentNode?.id ? 'red' : 
-                                    visitedNodes.some(vn => vn.id === node.id) ? 
-                                        (visitedNodes.find(vn => vn.id === node.id)?.color || componentColors[components.findIndex(comp => comp.some(n => n.id === node.id)) % componentColors.length] || "blue") 
-                                        : 'black',
-                                    pointerEvents: 'auto',
-                                    position: 'absolute'
-                                }}
-                            >
-                            </div>
-                        </Draggable>
-                    ))}
+                        </div>
+                    </Draggable>
+                ))}
                 </div>
                 <h3 class-name="status-text">{text}</h3>
             </div>
