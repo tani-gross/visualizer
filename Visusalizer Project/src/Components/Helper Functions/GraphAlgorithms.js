@@ -864,6 +864,7 @@ export const useGraphAlgorithms = () => {
         tsp,
         graphColoring,
         findConnectedComponents,
-        findStrongComponents
+        findStrongComponents,
+        resetEdges
     };
 };

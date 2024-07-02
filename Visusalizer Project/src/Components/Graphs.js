@@ -65,10 +65,12 @@ const Graphs = () => {
         startingText,
         setIsAlerting,
         isAlerting,
-        modalMessage
+        modalMessage,
+        setStartNode,
+        setEndNode
     } = useGraph();
 
-    const {animateKruskalsAlgorithm, graphColoring, findConnectedComponents, findStrongComponents} = useGraphAlgorithms();
+    const {animateKruskalsAlgorithm, graphColoring, findConnectedComponents, findStrongComponents, resetEdges} = useGraphAlgorithms();
     const {addNode, handleGenerateGraph, resetGraph, removeNode, handleNodeClick, handleMouseDown, handleSliderChange, startRemovingEdge, handleAddEdge, handleEdgeClick, handleDrag, handleDragStop, handleOpeningModal, showAlert} = useInternalGraphFunctions();
     
     // Use Effect to differentiate between modes
@@ -216,6 +218,18 @@ const Graphs = () => {
             setAdjList(newAdjList);
         }
         setIsDirected(!isDirected);
+    }
+
+    // Function to cancel beginning of algorithm
+    const cancelAlgorithm = () => {
+        resetEdges();
+        setIsDFS(false);
+        setIsBFS(false);
+        setIsPrim(false);
+        setIsShortestPath(false);
+        setIsTSP(false);
+        setStartNode(null);
+        setEndNode(null);
     }
 
     /*
@@ -367,9 +381,18 @@ const Graphs = () => {
                     </>
                 )}
 
+                {algorithmRunning && !algorithmStarted && !disablePause && (
+                    <>
+                        <h3>Control</h3>
+                        <button className="graph-button" onClick={cancelAlgorithm}>Cancel</button>
+                    </>
+                )}
+
                 {isPausedRef.current && algorithmStarted && !disablePause && (
                     <button className="graph-button" onClick={nextStep}>Next Step</button>
                 )}
+
+                
 
             </div>
                 
