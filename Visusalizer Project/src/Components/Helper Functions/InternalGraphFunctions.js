@@ -312,12 +312,13 @@ export const useInternalGraphFunctions = () => {
 
         const availableNodes = nodes.filter(node => 
             !edges.some(edge => 
-                (edge.from.id === selectedNode.id && edge.to.id === node.id) ||
-                (!isDirected && edge.from.id === node.id && edge.to.id === selectedNode.id)
+                (isDirected && edge.from.id === selectedNode.id && edge.to.id === node.id) ||
+                (!isDirected && ((edge.from.id === selectedNode.id && edge.to.id === node.id) || (edge.from.id === node.id && edge.to.id === selectedNode.id)))
             ) && node.id !== selectedNode.id
         ).map(node => node.id);
 
         if(availableNodes.length === 0){
+            showAlert("No available edges for this node");
             return;
         }
 
