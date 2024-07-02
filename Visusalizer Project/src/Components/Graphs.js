@@ -5,6 +5,7 @@ import GraphModal from './GraphModal';
 import { useGraph } from './Helper Functions/GraphContext';
 import { useGraphAlgorithms } from './Helper Functions/GraphAlgorithms';
 import { useInternalGraphFunctions } from './Helper Functions/InternalGraphFunctions';
+import AlertModal from './AlertModal';
 
 
 const Graphs = () => {
@@ -62,10 +63,13 @@ const Graphs = () => {
         setIsModalOpen,
         highlightedButtonColor,
         startingText,
+        setIsAlerting,
+        isAlerting,
+        modalMessage
     } = useGraph();
 
     const {animateKruskalsAlgorithm, graphColoring, findConnectedComponents, findStrongComponents} = useGraphAlgorithms();
-    const {addNode, handleGenerateGraph, resetGraph, removeNode, handleNodeClick, handleMouseDown, handleSliderChange, startRemovingEdge, handleAddEdge, handleEdgeClick, handleDrag, handleDragStop, handleOpeningModal} = useInternalGraphFunctions();
+    const {addNode, handleGenerateGraph, resetGraph, removeNode, handleNodeClick, handleMouseDown, handleSliderChange, startRemovingEdge, handleAddEdge, handleEdgeClick, handleDrag, handleDragStop, handleOpeningModal, showAlert} = useInternalGraphFunctions();
     
     // Use Effect to differentiate between modes
     useEffect(() => {
@@ -246,7 +250,7 @@ const Graphs = () => {
             return;
         }
         if (isDirected) {
-            alert("cannot be directed");
+            showAlert("Graph cannot be directed for Prim's Algorithm")
             return;
         }
         setRunningAlgorithm("Prim");
@@ -261,7 +265,7 @@ const Graphs = () => {
             return;
         }
         if (isDirected) {
-            alert("cannot be directed");
+            showAlert("Graph cannot be directed for Kruskal's Algorithm");
             return;
         }
         animateKruskalsAlgorithm();
@@ -309,9 +313,14 @@ const Graphs = () => {
     return (
         <div className="main-container">
             <GraphModal 
-                    show={isModalOpen} 
-                    onClose={() => setIsModalOpen(false)} 
-                    onGenerateGraph={handleGenerateGraph} 
+                show={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                onGenerateGraph={handleGenerateGraph} 
+            />
+            <AlertModal
+                isOpen={isAlerting}
+                onClose={() => setIsAlerting(false)} 
+                message={modalMessage}
             />
             <div className="button-container">
                 <h3>Graph Creation</h3>

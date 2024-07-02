@@ -43,6 +43,8 @@ export const GraphProvider = ({ children }) => {
     const [runningAlgorithm, setRunningAlgorithm] = useState(null);
     const [isDirected, setIsDirected] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAlerting, setIsAlerting] = useState(false);
+    const [modalMessage, setModalMessage] = useState("");
     const highlightedButtonColor = "lightblue";
     const startingText = "Move Node, Select Node, or Press Button to Continue";
     const treeEdgeColor = "blue";
@@ -130,7 +132,11 @@ export const GraphProvider = ({ children }) => {
                 currentEdgeColor,
                 defaultEdgeColor,
                 startingText,
-                treeEdgeColor
+                treeEdgeColor,
+                isAlerting,
+                setIsAlerting,
+                modalMessage,
+                setModalMessage
             }}
         >
             {children}

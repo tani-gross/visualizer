@@ -46,7 +46,9 @@ export const useInternalGraphFunctions = () => {
         isTSP,
         setDragging,
         setSliderValue,
-        setIsModalOpen
+        setIsModalOpen,
+        setModalMessage,
+        setIsAlerting
     } = useGraph();
 
     // Function to add a new node to the graph
@@ -56,7 +58,7 @@ export const useInternalGraphFunctions = () => {
         }
 
         if(nodes.length >= 20){
-            alert("too many nodes");
+            showAlert("Cannot add any more nodes");
             return;
         }
 
@@ -275,7 +277,7 @@ export const useInternalGraphFunctions = () => {
         }
 
         if(edges.length < 1){
-            alert("must be at least one edge");
+            showAlert("There must be at least one edge");
             return;
         }
         setText("Click on an edge to remove it");
@@ -288,21 +290,22 @@ export const useInternalGraphFunctions = () => {
 
         if(!isDirected){
             if(((nodes.length * (nodes.length - 1)) / 2) === edges.length){
-                alert("cannot add another edge");
+                showAlert("No room to add another edge");
                 return;
             }
         }else{
             if(((nodes.length * (nodes.length - 1))) === edges.length){
-                alert("cannot add another edge");
+                showAlert("No room to add another edge");
                 return;
             }
         }
         
 
         if (nodes.length < 2) {
-            alert("You need at least two nodes to add an edge.");
+            showAlert("You need at least two nodes to add an edge.");
             return;
         }
+
         setIsAddingEdge(true);
         setText("Click another node to add edge");
     };
@@ -348,6 +351,12 @@ export const useInternalGraphFunctions = () => {
 
     }
 
+    // Function to show the alert moal
+    const showAlert = (message) => {
+        setModalMessage(message);
+        setIsAlerting(true);
+    }
+
     return {
         addNode,
         handleGenerateGraph,
@@ -362,6 +371,7 @@ export const useInternalGraphFunctions = () => {
         handleEdgeClick,
         handleDrag,
         handleDragStop,
-        handleOpeningModal
+        handleOpeningModal,
+        showAlert
     };
 };
