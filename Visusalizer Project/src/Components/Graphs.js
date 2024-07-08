@@ -69,7 +69,8 @@ const Graphs = () => {
         setStartNode,
         setEndNode,
         availableNodes,
-        isAddingEdge
+        isAddingEdge,
+        stopRef
     } = useGraph();
 
     const {animateKruskalsAlgorithm, graphColoring, findConnectedComponents, findStrongComponents, resetEdges} = useGraphAlgorithms();
@@ -234,6 +235,11 @@ const Graphs = () => {
         setEndNode(null);
     }
 
+    // Function to stop the algorithm
+    const stopAlgorithm = () => {
+        stopRef.current = true;
+    }
+
     /*
         Algorithms
     */
@@ -383,7 +389,7 @@ const Graphs = () => {
                     </>
                 )}
 
-                {algorithmRunning && !algorithmStarted && !text.includes("Done") && (
+                {algorithmRunning && !algorithmStarted && !text.includes("Done") && (isTSP || isBFS || isPrim || isDFS || isShortestPath) && (
                     <>
                         <h3>Control</h3>
                         <button className="graph-button" onClick={cancelAlgorithm}>Cancel</button>
@@ -391,7 +397,10 @@ const Graphs = () => {
                 )}
 
                 {isPausedRef.current && algorithmStarted && !disablePause && (
-                    <button className="graph-button" onClick={nextStep}>Next Step</button>
+                    <>
+                        <button className="graph-button" onClick={nextStep}>Next Step</button>
+                        <button className="graph-button" onClick={stopAlgorithm}>Stop</button>
+                    </>
                 )}
 
                 

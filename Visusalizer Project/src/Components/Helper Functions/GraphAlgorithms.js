@@ -35,7 +35,8 @@ export const useGraphAlgorithms = () => {
         setIsStepMode,
         defaultEdgeColor,
         setStartNode,
-        setEndNode
+        setEndNode,
+        stopRef
     } = useGraph();
 
     // Function to sleep and check for pausing
@@ -47,6 +48,10 @@ export const useGraphAlgorithms = () => {
             const checkPauseAndSleep = () => {
                 if (isPausedRef.current) {
                     const checkPause = () => {
+                        if(stopRef.current){
+                            resolve();
+                            return;
+                        }
                         if(isStepModeRef.current){
                             setIsStepMode(true);
                             resolve();
@@ -78,6 +83,11 @@ export const useGraphAlgorithms = () => {
             // eslint-disable-next-line
             await new Promise(resolve => {
                 const checkStep = () => {
+                    if(stopRef.current){
+                        resolve();
+                        return;
+                    }
+
                     if (!isPausedRef.current || currentStepRef.current > stepIndex) {
                         resolve();
                     } else {
@@ -86,6 +96,9 @@ export const useGraphAlgorithms = () => {
                 };
                 checkStep();
             });
+            if(stopRef.current){
+                return;
+            }
             if(isStepModeRef.current){
                 setIsPaused(true);
                 isPausedRef.current = true;
@@ -110,10 +123,15 @@ export const useGraphAlgorithms = () => {
         currentStepRef.current = 0;
         setDisablePause(false);
         setRunningAlgorithm(null);
+        setCurrentNode(null);
+        setAlgorithmStarted(false);
+        setStartNode(null);
+        setEndNode(null);
     };
 
     // DFS implementatoin
     const dfs = async (startNode) => {
+        stopRef.current = false;
         setAlgorithmStarted(true);
         setText("DFS in progress...");
         if(isPausedRef.current){
@@ -155,6 +173,10 @@ export const useGraphAlgorithms = () => {
                 if (!visitedEdgeSet.has(edge)) {
                     stepIndex++;
                     await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
+                    if (stopRef.current) {
+                        resetEdges();
+                        return;
+                    }
                 }
 
                 if (!visitedNodeSet.has(neighborId)) { 
@@ -181,6 +203,7 @@ export const useGraphAlgorithms = () => {
 
     // BFS implementation
     const bfs = async (startNode) => {
+        stopRef.current = false;
         setAlgorithmStarted(true);
         setText("BFS in progress...");
         if(isPausedRef.current){
@@ -216,6 +239,10 @@ export const useGraphAlgorithms = () => {
                 if(!visitedEdgeSet.has(edge)){
                     stepIndex++;
                     await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
+                    if (stopRef.current) {
+                        resetEdges();
+                        return;
+                    }
                 }
 
                 if (!visitedNodeSet.has(neighborId)) {
@@ -335,6 +362,7 @@ export const useGraphAlgorithms = () => {
 
     // Function to animate Prim's algorithm
     const animatePrimsAlgorithm = async (startNode) => {
+        stopRef.current = false;
         setAlgorithmStarted(true);
         setText("Prim's Algorithm in progress...");
         if(isPausedRef.current){
@@ -376,6 +404,10 @@ export const useGraphAlgorithms = () => {
 
             stepIndex++;
             await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
+            if (stopRef.current) {
+                resetEdges();
+                return;
+            }
 
             const edge = edgeQueue.shift();
             const { from, to } = edge;
@@ -409,6 +441,7 @@ export const useGraphAlgorithms = () => {
 
     // Function to find the shortest path between two nodes
     const findShortestPath = async (startNode, targetNode) => {
+        stopRef.current = false;
         setAlgorithmStarted(true);
         setText("Shortest Path Algorithm in progress...");
         if(isPausedRef.current){
@@ -466,6 +499,10 @@ export const useGraphAlgorithms = () => {
                 if (!visitedEdgeSet.has(edge)) {
                     stepIndex++;
                     await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
+                    if (stopRef.current) {
+                        resetEdges();
+                        return;
+                    }
                 }
 
                 const alt = dist[currentNode.id] + calculateEdgeLength(edge);
@@ -537,6 +574,7 @@ export const useGraphAlgorithms = () => {
 
     // Function to animate TSP
     const tsp = async (node) => {
+        stopRef.current = false;
         setAlgorithmStarted(true);
         setText("TSP in progress...");
         if(isPausedRef.current){
@@ -575,6 +613,10 @@ export const useGraphAlgorithms = () => {
                 setVisitedEdges(prev => [...prev, { ...edge, color: currentEdgeColor }]);
                 stepIndex++;
                 await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
+                if (stopRef.current) {
+                    resetEdges();
+                    return;
+                }
 
                 if(isStepModeRef.current){
                     setIsPaused(true);
@@ -598,6 +640,10 @@ export const useGraphAlgorithms = () => {
 
                 stepIndex++;
                 await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
+                if (stopRef.current) {
+                    resetEdges();
+                    return;
+                }
 
                 currentNode = nearestNode;
                 unvisited.delete(currentNode.id);
@@ -656,6 +702,7 @@ export const useGraphAlgorithms = () => {
         if(algorithmRunning || isRemovingEdge){
             return;
         }
+        stopRef.current = false;
         setRunningAlgorithm("Connected");
         setAlgorithmStarted(true);
         setText("Connected Components in progress...");
@@ -694,6 +741,10 @@ export const useGraphAlgorithms = () => {
                 if (!visitedEdgeSet.has(edge)) {
                     stepIndex++;
                     await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
+                    if (stopRef.current) {
+                        resetEdges();
+                        return;
+                    }
                 }
 
                 if (!visitedNodeSet.has(neighborId)) { 
@@ -716,6 +767,10 @@ export const useGraphAlgorithms = () => {
                 setCurrentNode(null);
                 stepIndex++;
                 await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
+                if (stopRef.current) {
+                    resetEdges();
+                    return;
+                }
             }
         };
 
@@ -724,6 +779,9 @@ export const useGraphAlgorithms = () => {
                 const componentColor = componentColors[componentIndex % componentColors.length];
                 componentIndex++;
                 await dfsRecursive(node, componentColor);
+                if(stopRef.current){
+                    return;
+                }
             }
         }
 
@@ -738,6 +796,7 @@ export const useGraphAlgorithms = () => {
         if(algorithmRunning || isRemovingEdge){
             return;
         }
+        stopRef.current = false;
         setRunningAlgorithm("Connected");
         setAlgorithmStarted(true);
         setText("Strong Components in progress...");
@@ -805,6 +864,10 @@ export const useGraphAlgorithms = () => {
                 if (!visitedEdgeSet.has(edge)) {
                     stepIndex++;
                     await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
+                    if (stopRef.current) {
+                        resetEdges();
+                        return;
+                    }
                 }
                 
                 if (!visitedNodeSet.has(neighborId)) { 
@@ -826,6 +889,10 @@ export const useGraphAlgorithms = () => {
                 setCurrentNode(null);
                 stepIndex++;
                 await helper(stepIndex, isPausedRef, currentStepRef, isStepModeRef, setIsPaused, totalSliderCount, sliderValueRef);
+                if (stopRef.current) {
+                    resetEdges();
+                    return;
+                }
             }
         };
     
@@ -847,6 +914,9 @@ export const useGraphAlgorithms = () => {
                 const componentColor = componentColors[componentIndex % componentColors.length];
                 componentIndex++;
                 await dfs2(node, componentColor);
+                if(stopRef.current){
+                    return;
+                }
             }
         }
     
